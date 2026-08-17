@@ -1,0 +1,1880 @@
+# TPT Materials: Open Source Design Document
+
+**Organization:** TPT Solutions (`tpt-solutions`)
+**Repository:** `tpt-materials`
+**Crate Prefix:** `tpt-mat-*`
+**License:** `MIT OR Apache-2.0`
+**Status:** Open Source Master Plan
+**Philosophy:** 100% Open Source. Micro-Scale Physics, Macro-Scale Impact. No GPL Traps. No Academic Lock-in.
+
+---
+
+## 1. Open Source Declaration
+
+`tpt-materials` is a fully open-source, MIT-licensed computational engine for **micro-scale material physics**: crystal plasticity, phase-field modeling, diffusion, micro-mechanics, and degradation. Every crate, every constitutive model, and every solver is freely available under MIT OR Apache-2.0.
+
+### Why Fully Open Source for Materials?
+
+The materials simulation space is trapped between academic code and commercial black boxes:
+
+1. **The GPL Academic Trap:** The most powerful micro-mechanics tools are GPL/LGPL-licensed academic code (DAMASK, MOOSE, FEniCS, LAMMPS). This makes them legally toxic for commercial R&D teams at steel mills, battery manufacturers, and aerospace suppliers.
+2. **The Commercial Black Box:** Commercial alternatives (Abaqus UMAT ecosystems, ANSYS Material Designer, Thermo-Calc) cost $50k-$300k per seat and hide their constitutive models behind compiled binaries.
+3. **The Scale Disconnect:** Device engineers (batteries, turbines, implants) need macro-scale material properties, but those properties emerge from micro-scale physics. Currently there is no clean bridge between the two.
+
+`tpt-materials` is that bridge. It provides pure-Rust, MIT-licensed micro-mechanics solvers that generate the **degradation curves, fatigue limits, and effective properties** consumed by your other TPT repositories (`tpt-energy`, `tpt-transport`, `tpt-electronics`, `tpt-medical`). Because it compiles to WebAssembly, materials scientists can run RVE homogenization and phase-field simulations directly in the browser.
+
+### Open Source Governance
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│                  TPT MATERIALS GOVERNANCE                    │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  License:        MIT OR Apache-2.0 (dual)                   │
+│  Contributions:  MIT OR Apache-2.0 (CLA-free via DCO)       │
+│  Trademark:      "TPT Materials" name reserved by TPT       │
+│  Governance:     Benevolent Dictator + RFC process          │
+│  Roadmap:        Public GitHub Projects board               │
+│  Releases:       SemVer, 6-week cadence                     │
+│  Security:       SECURITY.md, private disclosure            │
+│  Standards:      ASTM, ISO, NIST traceability               │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 2. Executive Vision: The Micro-to-Macro Bridge
+
+`tpt-materials` sits at the **bottom of the physics stack**. It generates the material truth that every other TPT repository depends on.
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│              THE MICRO-TO-MACRO PHYSICS STACK                 │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │                  tpt-materials                         │  │
+│  │  Crystal Plasticity │ Phase-Field │ Diffusion │ RVE   │  │
+│  └──────────────────────────────────────────────────────┘  │
+│                           │                                 │
+│         Outputs: degradation curves, fatigue limits,        │
+│         effective properties, phase diagrams                │
+│                           │                                 │
+│     ┌─────────────┬───────┴────────┬─────────────┐         │
+│     ▼             ▼                ▼             ▼         │
+│  ┌────────┐  ┌──────────┐   ┌──────────┐  ┌─────────┐    │
+│  │ tpt-   │  │ tpt-     │   │ tpt-     │  │ tpt-    │    │
+│  │ energy │  │ transport│   │electronics│ │ medical │    │
+│  │battery │  │composite │   │ solder   │  │ implant │    │
+│  │degrade │  │fatigue   │   │reliability│ │biocompat│    │
+│  └────────┘  └──────────┘   └──────────┘  └─────────┘    │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Why Rust for Materials Simulation?
+
+| Requirement | Rust Advantage |
+|---|---|
+| Massive RVE meshes | Zero-cost abstractions, no GC pauses |
+| Crystal tensor math | `tpt-math-linalg-fixed` for slip system tensors |
+| Browser-based R&D | WASM compilation for interactive microstructure tools |
+| Enterprise R&D | MIT-only chain, no GPL audit risk for manufacturers |
+| GPU acceleration | `wgpu` compute shaders for phase-field evolution |
+| Memory safety | No segfaults in long-running grain growth simulations |
+| Reproducibility | Deterministic solvers for peer-reviewable research |
+
+---
+
+## 3. Substrate Integration Map
+
+```text
+tpt-math
+├── tpt-math-linalg-fixed     → Schmid tensors, 4th-order elasticity tensors
+├── tpt-math-optimize-general → Parameter calibration, inverse fitting
+├── tpt-math-prob-dist        → Grain size distributions, stochastic microstructures
+└── tpt-math-signal-filter    → EBSD data denoising
+
+tpt-engineering
+├── Material properties       → Elastic constants, thermal expansion
+├── Thermodynamics            → Free energy functions, CALPHAD integration
+└── Failure criteria          → Macro-scale failure envelope inputs
+
+tpt-science
+├── Phase-field equations     → Allen-Cahn, Cahn-Hilliard solvers
+├── Diffusion                 → Fick's laws, Darken's equation
+├── Crystallography           → Point groups, space groups, Miller indices
+└── Electrochemistry          → Corrosion, battery electrode kinetics
+
+tpt-fem
+├── Mesh generation           → Voxel/hex meshing for RVEs
+├── Element types             → 8-node hex for crystal plasticity FEM
+├── Periodic BCs              → RVE periodic boundary conditions
+├── Assembly                  → Global stiffness assembly
+└── Solvers                   → Newton-Raphson for non-linear CP
+
+Cross-Repo Outputs (The Material Truth):
+├── → tpt-energy              → Battery electrode degradation curves
+├── → tpt-transport           → Composite fatigue, turbine alloy creep
+├── → tpt-electronics         → Solder joint reliability, wire bond fatigue
+└── → tpt-medical             → Implant osseointegration, bone ingrowth
+```
+
+---
+
+## 4. Workspace Layout
+
+```text
+tpt-materials/
+├── Cargo.toml
+├── LICENSE-MIT
+├── LICENSE-APACHE
+├── README.md
+├── CONTRIBUTING.md
+├── SECURITY.md
+├── CODE_OF_CONDUCT.md
+├── CHANGELOG.md
+├── deny.toml
+├── rustfmt.toml
+├── clippy.toml
+├── .github/
+│   ├── workflows/
+│   │   ├── ci.yml
+│   │   ├── license.yml
+│   │   ├── benchmark.yml
+│   │   ├── docs.yml
+│   │   └── release.yml
+│   ├── ISSUE_TEMPLATE/
+│   └── PULL_REQUEST_TEMPLATE.md
+├── crates/
+│   ├── core/
+│   │   ├── tpt-mat-core/
+│   │   ├── tpt-mat-constants/
+│   │   ├── tpt-mat-crystallography/
+│   │   └── tpt-mat-wasm/
+│   ├── crystal-plasticity/
+│   │   ├── tpt-mat-crystal-plasticity/
+│   │   ├── tpt-mat-hardening/
+│   │   └── tpt-mat-texture/
+│   ├── phase-field/
+│   │   ├── tpt-mat-phase-field/
+│   │   ├── tpt-mat-grain-growth/
+│   │   └── tpt-mat-solidification/
+│   ├── micro-mechanics/
+│   │   ├── tpt-mat-rve/
+│   │   ├── tpt-mat-homogenization/
+│   │   └── tpt-mat-composite-micro/
+│   ├── diffusion/
+│   │   ├── tpt-mat-diffusion/
+│   │   ├── tpt-mat-phase-transform/
+│   │   └── tpt-mat-calphad/
+│   ├── degradation/
+│   │   ├── tpt-mat-damage/
+│   │   ├── tpt-mat-fatigue-micro/
+│   │   └── tpt-mat-corrosion/
+│   ├── soft-matter/
+│   │   ├── tpt-mat-polymer/
+│   │   └── tpt-mat-hydrogel/
+│   ├── energy-materials/
+│   │   ├── tpt-mat-battery/
+│   │   └── tpt-mat-hydrogen-storage/
+│   ├── manufacturing/
+│   │   ├── tpt-mat-additive/
+│   │   ├── tpt-mat-welding/
+│   │   └── tpt-mat-heat-treatment/
+│   └── informatics/
+│       ├── tpt-mat-database/
+│       └── tpt-mat-machine-learning/
+├── examples/
+│   ├── fcc-single-crystal-tension/
+│   ├── polycrystal-rve-homogenization/
+│   ├── spinodal-decomposition/
+│   ├── dendritic-solidification/
+│   ├── battery-electrode-degradation/
+│   └── additive-manufacturing-microstructure/
+├── test-data/
+│   ├── ebsd/
+│   ├── crystal-structures/
+│   ├── phase-diagrams/
+│   └── golden/
+├── benches/
+│   ├── crystal-plasticity-fem.rs
+│   ├── phase-field-evolution.rs
+│   ├── rve-homogenization.rs
+│   └── diffusion-couple.rs
+├── docs/
+│   ├── book/
+│   ├── rfc/
+│   └── api/
+└── rfcs/
+    ├── 0001-crystal-plasticity-fem.md
+    ├── 0002-phase-field-framework.md
+    ├── 0003-rve-periodic-boundary.md
+    └── 0004-battery-degradation-model.md
+```
+
+---
+
+## 5. Crate Taxonomy (Complete)
+
+### Domain 1: Core & Fundamentals
+
+#### `tpt-mat-core`
+
+Fundamental domain types for materials science.
+
+```rust
+pub struct MaterialMicrostructure {
+    pub id: MicrostructureId,
+    pub name: String,
+    pub phases: Vec<Phase>,
+    pub grains: Vec<Grain>,
+    pub volume_element: VoxelGrid,
+    pub temperature: f64,
+}
+
+pub struct Phase {
+    pub id: PhaseId,
+    pub name: String,
+    pub crystal_structure: CrystalStructure,
+    pub composition: Composition,
+    pub volume_fraction: f64,
+    pub properties: PhaseProperties,
+}
+
+pub struct Grain {
+    pub id: GrainId,
+    pub phase: PhaseId,
+    pub orientation: CrystalOrientation,
+    pub centroid: Vector3,
+    pub equivalent_radius: f64,
+    pub neighbors: Vec<GrainId>,
+}
+
+pub struct Composition {
+    pub elements: HashMap<ElementSymbol, f64>,  // atomic or weight fraction
+    pub basis: CompositionBasis,
+}
+
+pub enum CompositionBasis {
+    AtomicFraction,
+    WeightFraction,
+    MoleFraction,
+}
+
+pub struct CrystalOrientation {
+    pub representation: OrientationRepresentation,
+}
+
+pub enum OrientationRepresentation {
+    EulerBunge { phi1: f64, phi: f64, phi2: f64 },
+    Quaternion([f64; 4]),
+    RotationMatrix(Matrix3),
+    Rodrigues(Vector3),
+    AxisAngle { axis: Vector3, angle: f64 },
+}
+```
+
+#### `tpt-mat-crystallography`
+
+Crystal structures, Miller indices, and slip systems.
+
+```rust
+pub enum CrystalStructure {
+    FCC { a: f64 },
+    BCC { a: f64 },
+    HCP { a: f64, c: f64 },
+    Diamond { a: f64 },
+    SimpleCubic { a: f64 },
+    BCT { a: f64, c: f64 },
+    Custom { lattice_parameters: LatticeParameters, space_group: u32 },
+}
+
+pub struct LatticeParameters {
+    pub a: f64,
+    pub b: f64,
+    pub c: f64,
+    pub alpha: f64,
+    pub beta: f64,
+    pub gamma: f64,
+}
+
+pub struct MillerIndex {
+    pub h: i32,
+    pub k: i32,
+    pub l: i32,
+}
+
+pub struct SlipSystem {
+    pub slip_direction: Vector3,       // Burgers vector direction (s)
+    pub slip_plane_normal: Vector3,    // Plane normal (n)
+    pub critical_resolved_shear_stress: f64,
+}
+
+impl CrystalStructure {
+    pub fn slip_systems(&self) -> Vec<SlipSystem> {
+        match self {
+            CrystalStructure::FCC { .. } => {
+                // 12 slip systems: {111}<110>
+                self.fcc_slip_systems()
+            }
+            CrystalStructure::BCC { .. } => {
+                // 12 slip systems: {110}<111>
+                self.bcc_slip_systems()
+            }
+            CrystalStructure::HCP { .. } => {
+                // Basal, prismatic, pyramidal systems
+                self.hcp_slip_systems()
+            }
+            _ => vec![],
+        }
+    }
+}
+
+impl SlipSystem {
+    pub fn schmid_tensor(&self) -> Matrix3 {
+        // M = sym(s ⊗ n) = 0.5 * (s⊗n + n⊗s)
+        let s = self.slip_direction;
+        let n = self.slip_plane_normal;
+        0.5 * (outer(s, n) + outer(n, s))
+    }
+    
+    pub fn resolved_shear_stress(&self, stress: &Matrix3) -> f64 {
+        // τ = σ : M (double contraction)
+        let m = self.schmid_tensor();
+        (stress * m).trace()
+    }
+}
+```
+
+#### `tpt-mat-constants`
+
+Physical constants and periodic table data.
+
+```rust
+pub struct PhysicalConstants;
+
+impl PhysicalConstants {
+    pub const BOLTZMANN: f64 = 1.380649e-23;       // J/K
+    pub const GAS_CONSTANT: f64 = 8.314462618;     // J/(mol·K)
+    pub const AVOGADRO: f64 = 6.02214076e23;       // 1/mol
+    pub const FARADAY: f64 = 96485.33212;          // C/mol
+    pub const PLANCK: f64 = 6.62607015e-34;        // J·s
+}
+
+pub struct PeriodicTable;
+
+impl PeriodicTable {
+    pub fn atomic_mass(symbol: &str) -> Option<f64> {
+        // Return atomic mass in g/mol
+    }
+    
+    pub fn atomic_radius(symbol: &str) -> Option<f64> {
+        // Return atomic radius in meters
+    }
+}
+```
+
+---
+
+### Domain 2: Crystal Plasticity
+
+#### `tpt-mat-crystal-plasticity`
+
+Crystal Plasticity Finite Element Method (CP-FEM).
+
+```rust
+pub struct CrystalPlasticityModel {
+    pub crystal_structure: CrystalStructure,
+    pub slip_systems: Vec<SlipSystem>,
+    pub hardening_law: HardeningLaw,
+    pub rate_sensitivity: f64,         // m (viscoplastic exponent)
+    pub reference_strain_rate: f64,    // γ̇0
+    pub elastic_tensor: ElasticTensor,
+}
+
+pub enum HardeningLaw {
+    Voce {
+        tau_0: f64,       // Initial slip resistance
+        tau_sat: f64,     // Saturation slip resistance
+        h_0: f64,         // Initial hardening rate
+    },
+    PowerLaw {
+        k: f64,
+        n: f64,
+    },
+    KocksMecking {
+        theta_0: f64,     // Stage II hardening rate
+        g_0: f64,
+    },
+    Combined {
+        // Voce + latent hardening matrix
+        latent_hardening: Vec<Vec<f64>>,  // q_ab matrix
+    },
+}
+
+impl CrystalPlasticityModel {
+    pub fn plastic_velocity_gradient(
+        &self,
+        stress: &Matrix3,
+        dt: f64,
+    ) -> PlasticIncrement {
+        // Calculate slip rates on all systems
+        // Lp = Σ γ̇α * (sα ⊗ nα)
+        
+        let mut lp = Matrix3::zeros();
+        let mut slip_rates = Vec::with_capacity(self.slip_systems.len());
+        
+        for system in &self.slip_systems {
+            let tau = system.resolved_shear_stress(stress);
+            let gamma = system.critical_resolved_shear_stress;
+            
+            // Viscoplastic power law flow rule:
+            // γ̇α = γ̇0 * |τα/γα|^(1/m) * sign(τα)
+            let ratio = (tau / gamma).abs();
+            let rate = self.reference_strain_rate 
+                * ratio.powf(1.0 / self.rate_sensitivity)
+                * tau.signum();
+            
+            slip_rates.push(rate);
+            lp += rate * outer(system.slip_direction, system.slip_plane_normal);
+        }
+        
+        PlasticIncrement {
+            velocity_gradient: lp,
+            slip_rates,
+        }
+    }
+    
+    pub fn update_hardening(
+        &mut self,
+        slip_increment: &[f64],
+    ) {
+        // Update slip resistance based on hardening law
+        // γα += Σ h_ab * |Δγb|  (Voce saturation)
+    }
+}
+
+pub struct PlasticIncrement {
+    pub velocity_gradient: Matrix3,
+    pub slip_rates: Vec<f64>,
+}
+
+pub struct CpFemSolver {
+    pub mesh: VoxelGrid,
+    pub material: CrystalPlasticityModel,
+    pub boundary_conditions: Vec<StructuralBC>,
+}
+
+impl CpFemSolver {
+    pub fn solve_increment(
+        &mut self,
+        strain_increment: &Matrix3,
+        dt: f64,
+    ) -> Result<CpFemResult, SolverError> {
+        // 1. Apply strain increment via boundary conditions
+        // 2. Assemble global stiffness (tangent modulus)
+        // 3. Solve for displacement increments (Newton-Raphson)
+        // 4. Update stresses at each integration point
+        // 5. Update slip system resistances (hardening)
+        // 6. Update lattice rotations
+    }
+}
+
+pub struct CpFemResult {
+    pub stresses: Vec<Matrix3>,
+    pub strains: Vec<Matrix3>,
+    pub slip_rates: Vec<Vec<f64>>,
+    pub lattice_rotations: Vec<Matrix3>,
+    pub accumulated_shear: Vec<Vec<f64>>,
+}
+```
+
+#### `tpt-mat-texture`
+
+Crystallographic texture analysis.
+
+```rust
+pub struct TextureAnalyzer {
+    pub orientations: Vec<CrystalOrientation>,
+    pub weights: Vec<f64>,
+}
+
+impl TextureAnalyzer {
+    pub fn from_ebsd(ebsd_data: &EbsdData) -> TextureAnalyzer {
+        // Parse EBSD orientation map
+    }
+    
+    pub fn pole_figure(
+        &self,
+        hkl: MillerIndex,
+        resolution: u32,
+    ) -> PoleFigure {
+        // Project orientations onto stereographic projection
+    }
+    
+    pub fn orientation_distribution_function(
+        &self,
+        bandwidth: f64,
+    ) -> Odf {
+        // Calculate ODF using kernel density estimation
+    }
+    
+    pub fn taylor_factor(
+        &self,
+        strain_mode: StrainMode,
+    ) -> f64 {
+        // Calculate average Taylor factor for polycrystal
+    }
+}
+
+pub struct PoleFigure {
+    pub hkl: MillerIndex,
+    pub intensity: Vec<Vec<f64>>,  // 2D grid of intensities
+    pub max_intensity: f64,
+}
+```
+
+---
+
+### Domain 3: Phase-Field Modeling
+
+#### `tpt-mat-phase-field`
+
+Phase-field solver framework.
+
+```rust
+pub struct PhaseFieldSolver {
+    pub grid: VoxelGrid,
+    pub model: PhaseFieldModel,
+    pub time_step: f64,
+    pub mobility: f64,
+    pub gradient_coefficient: f64,
+}
+
+pub enum PhaseFieldModel {
+    AllenCahn {
+        // Non-conserved order parameter (grain growth, ordering)
+        free_energy: FreeEnergyFunctional,
+    },
+    CahnHilliard {
+        // Conserved order parameter (spinodal decomposition)
+        free_energy: FreeEnergyFunctional,
+    },
+    Kobayashi {
+        // Solidification with temperature coupling
+        latent_heat: f64,
+    },
+    MultiPhase {
+        // Multiple order parameters for multi-grain systems
+        num_grains: u32,
+    },
+}
+
+pub struct FreeEnergyFunctional {
+    pub bulk: BulkEnergy,
+    pub gradient_coefficient: f64,
+}
+
+pub enum BulkEnergy {
+    DoubleWell { barrier_height: f64 },
+    Polynomial { coefficients: Vec<f64> },
+    RegularSolution { interaction_parameter: f64 },
+}
+
+impl PhaseFieldSolver {
+    pub fn step_allen_cahn(&mut self) {
+        // Allen-Cahn equation:
+        // ∂η/∂t = -L * δF/δη = -L * (df/dη - κ∇²η)
+        //
+        // Discretized:
+        // η^(n+1) = η^n - dt * L * (df/dη - κ * laplacian(η))
+        
+        let laplacian = self.compute_laplacian(&self.order_parameter);
+        let df_deta = self.compute_bulk_derivative(&self.order_parameter);
+        
+        for i in 0..self.order_parameter.len() {
+            self.order_parameter[i] -= self.time_step * self.mobility 
+                * (df_deta[i] - self.gradient_coefficient * laplacian[i]);
+        }
+    }
+    
+    pub fn step_cahn_hilliard(&mut self) {
+        // Cahn-Hilliard equation:
+        // ∂c/∂t = ∇·(M∇(δF/δc))
+        //
+        // Split into two equations:
+        // μ = df/dc - κ∇²c  (chemical potential)
+        // ∂c/∂t = ∇·(M∇μ)
+    }
+    
+    pub fn compute_laplacian(&self, field: &[f64]) -> Vec<f64> {
+        // 2nd-order central difference or spectral method
+    }
+}
+
+pub struct PhaseFieldResult {
+    pub order_parameter: Vec<f64>,
+    pub concentration: Vec<f64>,
+    pub free_energy: f64,
+    pub interface_area: f64,
+}
+```
+
+#### `tpt-mat-solidification`
+
+Dendritic solidification simulation.
+
+```rust
+pub struct SolidificationSolver {
+    pub phase_field: PhaseFieldSolver,
+    pub thermal_field: ThermalField,
+    pub anisotropy: AnisotropyModel,
+}
+
+pub struct AnisotropyModel {
+    pub strength: f64,           // ε (surface energy anisotropy)
+    pub mode: u32,               // 4-fold for cubic, 6-fold for HCP
+}
+
+impl SolidificationSolver {
+    pub fn simulate_dendrite(
+        &mut self,
+        undercooling: f64,
+        duration: f64,
+    ) -> SolidificationResult {
+        // Simulate dendritic growth from a seed
+        // Track tip velocity, arm spacing
+    }
+    
+    pub fn secondary_arm_spacing(&self) -> f64 {
+        // Calculate λ2 from phase-field result
+    }
+}
+
+pub struct SolidificationResult {
+    pub solid_fraction: f64,
+    pub tip_velocity: f64,
+    pub primary_arm_spacing: f64,
+    pub secondary_arm_spacing: f64,
+    pub microstructure: Vec<f64>,
+}
+```
+
+#### `tpt-mat-grain-growth`
+
+Grain growth and recrystallization.
+
+```rust
+pub struct GrainGrowthSolver {
+    pub phase_field: PhaseFieldSolver,
+    pub mobilities: GrainBoundaryMobility,
+}
+
+pub struct GrainBoundaryMobility {
+    pub base_mobility: f64,
+    pub misorientation_dependent: bool,
+}
+
+impl GrainGrowthSolver {
+    pub fn simulate_growth(
+        &mut self,
+        temperature: f64,
+        duration: f64,
+    ) -> GrainGrowthResult {
+        // Simulate grain growth via Allen-Cahn
+        // Track grain size distribution evolution
+    }
+    
+    pub fn grain_size_distribution(&self) -> GrainSizeDistribution {
+        // Calculate log-normal or Rayleigh distribution
+    }
+}
+
+pub struct GrainSizeDistribution {
+    pub mean_radius: f64,
+    pub std_deviation: f64,
+    pub histogram: Vec<(f64, u32)>,
+}
+```
+
+---
+
+### Domain 4: Micro-Mechanics & RVE
+
+#### `tpt-mat-rve`
+
+Representative Volume Element generation and analysis.
+
+```rust
+pub struct RepresentativeVolumeElement {
+    pub mesh: VoxelGrid,
+    pub grains: Vec<Grain>,
+    pub boundary_conditions: RveBoundaryCondition,
+    pub material: CrystalPlasticityModel,
+}
+
+pub enum RveBoundaryCondition {
+    Periodic,              // Periodic displacement fluctuations
+    KinematicUniform,      // Uniform strain (Taylor model)
+    StaticUniform,         // Uniform stress (Sachs model)
+}
+
+impl RepresentativeVolumeElement {
+    pub fn generate_voronoi(
+        num_grains: u32,
+        domain_size: Vector3,
+        resolution: (u32, u32, u32),
+    ) -> RepresentativeVolumeElement {
+        // Generate Voronoi tessellation for polycrystal RVE
+    }
+    
+    pub fn generate_from_ebsd(
+        ebsd_data: &EbsdData,
+    ) -> RepresentativeVolumeElement {
+        // Build RVE directly from experimental EBSD data
+    }
+    
+    pub fn homogenize(
+        &self,
+        macro_strain: &Matrix3,
+    ) -> HomogenizedResponse {
+        // 1. Apply periodic boundary conditions
+        // 2. Solve CP-FEM
+        // 3. Volume-average the stress
+        // 4. Return effective tangent modulus
+        
+        // Hill-Mandel condition:
+        // σ̄:ε̄ = (1/V) ∫ σ:ε dV
+    }
+}
+
+pub struct HomogenizedResponse {
+    pub average_stress: Matrix3,
+    pub average_strain: Matrix3,
+    pub tangent_modulus: ElasticTensor,
+    pub local_stresses: Vec<Matrix3>,
+    pub local_slip_rates: Vec<Vec<f64>>,
+}
+```
+
+#### `tpt-mat-homogenization`
+
+Analytical and numerical homogenization methods.
+
+```rust
+pub enum HomogenizationMethod {
+    Voigt,           // Iso-strain (upper bound)
+    Reuss,           // Iso-stress (lower bound)
+    Hill,            // Average of Voigt and Reuss
+    MoriTanaka,      // Eshelby inclusion-based
+    SelfConsistent,  // Iterative self-consistent scheme
+    FftBased,        // FFT-based spectral method (Moulinec-Suquet)
+    FemBased,        // Full-field FEM RVE
+}
+
+pub struct Homogenizer {
+    pub method: HomogenizationMethod,
+}
+
+impl Homogenizer {
+    pub fn effective_stiffness(
+        &self,
+        phases: &[Phase],
+        volume_fractions: &[f64],
+    ) -> ElasticTensor {
+        match self.method {
+            HomogenizationMethod::Voigt => self.voigt_average(phases, volume_fractions),
+            HomogenizationMethod::Reuss => self.reuss_average(phases, volume_fractions),
+            HomogenizationMethod::MoriTanaka => self.mori_tanaka(phases, volume_fractions),
+            HomogenizationMethod::SelfConsistent => self.self_consistent(phases, volume_fractions),
+            _ => unimplemented!(),
+        }
+    }
+}
+```
+
+#### `tpt-mat-composite-micro`
+
+Fiber/matrix composite micro-mechanics.
+
+```rust
+pub struct CompositeMicroMechanics {
+    pub fiber: Phase,
+    pub matrix: Phase,
+    pub fiber_volume_fraction: f64,
+    pub fiber_arrangement: FiberArrangement,
+}
+
+pub enum FiberArrangement {
+    Unidirectional,
+    Woven { weave_type: WeaveType },
+    Random { orientation_distribution: Odf },
+}
+
+impl CompositeMicroMechanics {
+    pub fn rule_of_mixtures_stiffness(&self) -> ElasticTensor {
+        // E_c = V_f * E_f + V_m * E_m (longitudinal)
+    }
+    
+    pub fn halpin_tsai(
+        &self,
+        direction: Direction,
+    ) -> f64 {
+        // Halpin-Tsai equations for transverse properties
+    }
+    
+    pub fn fiber_misorientation_effect(
+        &self,
+        misalignment_deg: f64,
+    ) -> f64 {
+        // Knockdown factor for fiber waviness
+    }
+}
+```
+
+---
+
+### Domain 5: Diffusion & Phase Transformation
+
+#### `tpt-mat-diffusion`
+
+Diffusion solvers.
+
+```rust
+pub struct DiffusionSolver {
+    pub grid: VoxelGrid,
+    pub diffusivity: DiffusivityModel,
+    pub boundary_conditions: Vec<DiffusionBC>,
+}
+
+pub enum DiffusivityModel {
+    Constant(f64),
+    Arrhenius {
+        d_0: f64,              // Pre-exponential factor (m²/s)
+        activation_energy: f64, // Q (J/mol)
+    },
+    CompositionDependent {
+        d_a: f64,
+        d_b: f64,
+        interaction_parameter: f64,
+    },
+}
+
+impl DiffusivityModel {
+    pub fn at_temperature(&self, temperature: f64) -> f64 {
+        match self {
+            DiffusivityModel::Constant(d) => *d,
+            DiffusivityModel::Arrhenius { d_0, activation_energy } => {
+                // D = D0 * exp(-Q / RT)
+                d_0 * (-activation_energy / (PhysicalConstants::GAS_CONSTANT * temperature)).exp()
+            }
+            _ => unimplemented!(),
+        }
+    }
+}
+
+impl DiffusionSolver {
+    pub fn solve_transient(
+        &mut self,
+        time_end: f64,
+        dt: f64,
+    ) -> DiffusionResult {
+        // Fick's second law: ∂c/∂t = ∇·(D∇c)
+        // Finite difference or finite volume discretization
+    }
+    
+    pub fn solve_steady_state(&self) -> DiffusionResult {
+        // ∇·(D∇c) = 0
+    }
+}
+
+pub struct DiffusionResult {
+    pub concentration: Vec<f64>,
+    pub flux: Vec<Vector3>,
+    pub total_diffused: f64,
+}
+```
+
+#### `tpt-mat-phase-transform`
+
+Phase transformation kinetics.
+
+```rust
+pub struct PhaseTransformation {
+    pub ttt_diagram: Option<TttDiagram>,
+    pub cct_diagram: Option<CctDiagram>,
+    pub kinetics: TransformationKinetics,
+}
+
+pub enum TransformationKinetics {
+    JohnsonMehlAvrami {
+        n: f64,       // Avrami exponent
+        k: f64,       // Rate constant
+    },
+    KoistinenMarburger {
+        ms: f64,      // Martensite start temperature
+        mf: f64,      // Martensite finish temperature
+        alpha: f64,   // Rate parameter
+    },
+}
+
+impl PhaseTransformation {
+    pub fn transformed_fraction(
+        &self,
+        temperature: f64,
+        time: f64,
+    ) -> f64 {
+        match &self.kinetics {
+            TransformationKinetics::JohnsonMehlAvrami { n, k } => {
+                // f = 1 - exp(-k * t^n)
+                1.0 - (-k * time.powf(*n)).exp()
+            }
+            TransformationKinetics::KoistinenMarburger { ms, alpha, .. } => {
+                // f_m = 1 - exp(-α * (Ms - T)) for T < Ms
+                if temperature < *ms {
+                    1.0 - (-alpha * (ms - temperature)).exp()
+                } else {
+                    0.0
+                }
+            }
+        }
+    }
+}
+```
+
+#### `tpt-mat-calphad`
+
+CALPHAD thermodynamic database integration.
+
+```rust
+pub struct CalphadDatabase {
+    pub phases: Vec<CalphadPhase>,
+    pub elements: Vec<ElementSymbol>,
+}
+
+pub struct CalphadPhase {
+    pub name: String,
+    pub model: GibbsEnergyModel,
+    pub parameters: Vec<InteractionParameter>,
+}
+
+impl CalphadDatabase {
+    pub fn gibbs_energy(
+        &self,
+        phase: &str,
+        composition: &Composition,
+        temperature: f64,
+    ) -> f64 {
+        // Calculate molar Gibbs energy
+    }
+    
+    pub fn equilibrium(
+        &self,
+        composition: &Composition,
+        temperature: f64,
+        pressure: f64,
+    ) -> PhaseEquilibrium {
+        // Minimize total Gibbs energy
+        // Return stable phases and their fractions
+    }
+    
+    pub fn phase_diagram(
+        &self,
+        element_a: ElementSymbol,
+        element_b: ElementSymbol,
+        temperature_range: (f64, f64),
+    ) -> BinaryPhaseDiagram {
+        // Calculate binary phase diagram
+    }
+}
+
+pub struct PhaseEquilibrium {
+    pub stable_phases: Vec<(String, f64)>,  // (phase name, fraction)
+    pub phase_compositions: HashMap<String, Composition>,
+    pub total_gibbs_energy: f64,
+}
+```
+
+---
+
+### Domain 6: Degradation & Failure
+
+#### `tpt-mat-damage`
+
+Ductile damage and void growth.
+
+```rust
+pub struct GursonTvergaardNeedleman {
+    pub f_0: f64,      // Initial void volume fraction
+    pub f_c: f64,      // Critical void fraction (coalescence)
+    pub f_f: f64,      // Failure void fraction
+    pub q_1: f64,      // GTN parameter (typically 1.5)
+    pub q_2: f64,      // GTN parameter (typically 1.0)
+    pub q_3: f64,      // GTN parameter (q_1²)
+    pub f_n: f64,      // Nucleation volume fraction
+    pub s_n: f64,      // Nucleation standard deviation
+    pub e_n: f64,      // Nucleation mean strain
+}
+
+impl GursonTvergaardNeedleman {
+    pub fn yield_function(
+        &self,
+        stress: &Matrix3,
+        porosity: f64,
+        matrix_yield: f64,
+    ) -> f64 {
+        // GTN yield function:
+        // Φ = (σ_eq/σ_y)² + 2*q1*f*cos(3*q2*σ_m/(2*σ_y)) - (1 + q3*f²)
+        
+        let sigma_eq = von_mises(stress);
+        let sigma_m = stress.trace() / 3.0;
+        
+        (sigma_eq / matrix_yield).powi(2)
+            + 2.0 * self.q_1 * porosity 
+              * (3.0 * self.q_2 * sigma_m / (2.0 * matrix_yield)).cos()
+            - (1.0 + self.q_3 * porosity.powi(2))
+    }
+    
+    pub fn update_porosity(
+        &self,
+        current_f: f64,
+        plastic_strain_increment: f64,
+        hydrostatic_stress: f64,
+    ) -> f64 {
+        // Void growth + nucleation
+        // df = (1-f)*dε_p_kk + A*dε_p_eq
+    }
+}
+```
+
+#### `tpt-mat-fatigue-micro`
+
+Microstructural fatigue and crack initiation.
+
+```rust
+pub struct MicrostructuralFatigue {
+    pub rve: RepresentativeVolumeElement,
+    pub criterion: FatigueCriterion,
+}
+
+pub enum FatigueCriterion {
+    Findley {
+        k: f64,
+    },
+    FatemiSocie {
+        k: f64,
+    },
+    SmithWatsonTopper,
+    CrystallographicSlip {
+        critical_accumulated_shear: f64,
+    },
+}
+
+impl MicrostructuralFatigue {
+    pub fn predict_crack_initiation(
+        &self,
+        loading_history: &[LoadStep],
+    ) -> CrackInitiationResult {
+        // Run CP-FEM for each load cycle
+        // Track accumulated plastic slip at grain boundaries
+        // Identify critical grain for crack initiation
+    }
+    
+    pub fn fatigue_indicator_parameter(
+        &self,
+        result: &CpFemResult,
+    ) -> Vec<f64> {
+        // Calculate FIP at each integration point
+    }
+}
+
+pub struct CrackInitiationResult {
+    pub cycles_to_initiation: u64,
+    pub critical_grain: GrainId,
+    pub critical_location: Vector3,
+    pub fip_field: Vec<f64>,
+}
+```
+
+#### `tpt-mat-corrosion`
+
+Electrochemical corrosion modeling.
+
+```rust
+pub struct CorrosionModel {
+    pub anode: ElectrodeKinetics,
+    pub cathode: ElectrodeKinetics,
+    pub electrolyte: Electrolyte,
+}
+
+pub struct ElectrodeKinetics {
+    pub exchange_current_density: f64,  // i0 (A/m²)
+    pub tafel_slope: f64,               // β (V/decade)
+    pub equilibrium_potential: f64,     // E_eq (V)
+}
+
+impl CorrosionModel {
+    pub fn corrosion_rate(
+        &self,
+        temperature: f64,
+        ph: f64,
+    ) -> CorrosionRate {
+        // Calculate corrosion current density via Butler-Volmer
+        // Convert to penetration rate (mm/year)
+    }
+    
+    pub fn polarization_curve(
+        &self,
+        potential_range: (f64, f64),
+    ) -> PolarizationCurve {
+        // Generate anodic/cathodic polarization curves
+    }
+}
+
+pub struct CorrosionRate {
+    pub current_density: f64,      // A/m²
+    pub penetration_rate: f64,     // mm/year
+    pub mass_loss_rate: f64,       // g/(m²·day)
+}
+```
+
+---
+
+### Domain 7: Soft Matter
+
+#### `tpt-mat-polymer`
+
+Polymer chain and viscoelastic modeling.
+
+```rust
+pub struct PolymerModel {
+    pub chain_model: ChainModel,
+    pub crosslink_density: f64,
+}
+
+pub enum ChainModel {
+    FreelyJointedChain {
+        num_segments: u32,
+        segment_length: f64,
+    },
+    WormLikeChain {
+        persistence_length: f64,
+        contour_length: f64,
+    },
+    ArrudaBoyce {
+        // 8-chain model for rubber elasticity
+        n_segments: u32,
+        shear_modulus: f64,
+    },
+}
+
+impl PolymerModel {
+    pub fn stress_strain(
+        &self,
+        stretch: f64,
+    ) -> f64 {
+        match &self.chain_model {
+            ChainModel::ArrudaBoyce { n_segments, shear_modulus } => {
+                // Arruda-Boyce 8-chain model
+                // Uses inverse Langevin function
+            }
+            _ => unimplemented!(),
+        }
+    }
+}
+```
+
+---
+
+### Domain 8: Energy Materials
+
+#### `tpt-mat-battery`
+
+Battery electrode material modeling.
+
+```rust
+pub struct BatteryElectrodeModel {
+    pub active_material: ActiveMaterial,
+    pub degradation_mechanisms: Vec<DegradationMechanism>,
+}
+
+pub struct ActiveMaterial {
+    pub chemistry: BatteryChemistry,
+    pub particle_radius: f64,
+    pub diffusion_coefficient: f64,
+    pub partial_molar_volume: f64,
+}
+
+pub enum DegradationMechanism {
+    SeiGrowth {
+        rate_constant: f64,
+        activation_energy: f64,
+    },
+    ParticleCracking {
+        critical_stress: f64,
+    },
+    LithiumPlating {
+        plating_potential: f64,
+    },
+    TransitionMetalDissolution {
+        dissolution_rate: f64,
+    },
+}
+
+impl BatteryElectrodeModel {
+    pub fn simulate_diffusion_stress(
+        &self,
+        c_rate: f64,
+        num_cycles: u32,
+    ) -> ElectrodeDegradationResult {
+        // Couple lithium diffusion with mechanical stress
+        // Track particle cracking and SEI growth
+    }
+    
+    pub fn capacity_fade_curve(
+        &self,
+        cycles: u32,
+        temperature: f64,
+    ) -> DegradationCurve {
+        // Generate capacity fade vs cycle count
+        // This curve is exported to tpt-energy for grid simulation
+    }
+}
+
+pub struct DegradationCurve {
+    pub cycles: Vec<u32>,
+    pub capacity_retention: Vec<f64>,
+    pub resistance_growth: Vec<f64>,
+}
+```
+
+#### `tpt-mat-hydrogen-storage`
+
+Hydrogen storage materials.
+
+```rust
+pub struct HydrogenStorageMaterial {
+    pub hydride_type: HydrideType,
+    pub storage_capacity_wt_pct: f64,
+    pub absorption_kinetics: AbsorptionKinetics,
+}
+
+pub enum HydrideType {
+    MetalHydride { alloy: String },
+    ChemicalHydride { compound: String },
+    PorousMaterial { surface_area: f64 },
+}
+
+impl HydrogenStorageMaterial {
+    pub fn pvc_isotherm(
+        &self,
+        temperature: f64,
+    ) -> Vec<(f64, f64)> {
+        // Pressure-Composition-Isotherm curve
+    }
+}
+```
+
+---
+
+### Domain 9: Manufacturing Integration
+
+#### `tpt-mat-additive`
+
+Additive manufacturing microstructure prediction.
+
+```rust
+pub struct AdditiveManufacturingModel {
+    pub process: AmProcess,
+    pub material: AlloyComposition,
+}
+
+pub enum AmProcess {
+    LaserPowderBedFusion {
+        laser_power: f64,
+        scan_speed: f64,
+        hatch_spacing: f64,
+        layer_thickness: f64,
+    },
+    DirectedEnergyDeposition {
+        // ...
+    },
+    ElectronBeamMelting {
+        // ...
+    },
+}
+
+impl AdditiveManufacturingModel {
+    pub fn thermal_history(
+        &self,
+        location: Vector3,
+    ) -> ThermalHistory {
+        // Calculate thermal cycles during printing
+    }
+    
+    pub fn predict_microstructure(
+        &self,
+        thermal_history: &ThermalHistory,
+    ) -> PredictedMicrostructure {
+        // Predict grain structure, phase fractions, texture
+        // Based on cooling rates and thermal gradients
+    }
+    
+    pub fn residual_stress(
+        &self,
+        thermal_history: &ThermalHistory,
+    ) -> ResidualStressField {
+        // Predict residual stresses from thermal contraction
+    }
+}
+
+pub struct PredictedMicrostructure {
+    pub grain_size: GrainSizeDistribution,
+    pub phase_fractions: HashMap<String, f64>,
+    pub texture: TextureAnalyzer,
+    pub porosity: f64,
+}
+```
+
+#### `tpt-mat-welding`
+
+Weld microstructure and HAZ prediction.
+
+```rust
+pub struct WeldModel {
+    pub base_metal: AlloyComposition,
+    pub filler_metal: Option<AlloyComposition>,
+    pub process: WeldProcess,
+}
+
+impl WeldModel {
+    pub fn heat_affected_zone(
+        &self,
+        heat_input: f64,
+    ) -> HazResult {
+        // Calculate HAZ width and peak temperatures
+    }
+    
+    pub fn predict_haz_microstructure(
+        &self,
+        cooling_rate: f64,
+    ) -> HazMicrostructure {
+        // Predict grain coarsening, phase transformation in HAZ
+    }
+}
+```
+
+#### `tpt-mat-heat-treatment`
+
+Heat treatment simulation.
+
+```rust
+pub struct HeatTreatmentSimulator {
+    pub alloy: AlloyComposition,
+    pub phase_diagram: CalphadDatabase,
+}
+
+pub enum HeatTreatmentProcess {
+    Annealing { temperature: f64, duration: f64 },
+    Quenching { medium: QuenchMedium },
+    Tempering { temperature: f64, duration: f64 },
+    Aging { temperature: f64, duration: f64 },
+    SolutionTreatment { temperature: f64, duration: f64 },
+}
+
+impl HeatTreatmentSimulator {
+    pub fn simulate(
+        &self,
+        process: &HeatTreatmentProcess,
+    ) -> HeatTreatmentResult {
+        // Predict final microstructure and hardness
+    }
+    
+    pub fn predict_hardness(
+        &self,
+        microstructure: &PredictedMicrostructure,
+    ) -> f64 {
+        // Estimate hardness from phase fractions and grain size
+    }
+}
+```
+
+---
+
+### Domain 10: Materials Informatics
+
+#### `tpt-mat-database`
+
+Material property database.
+
+```rust
+pub struct MaterialsDatabase {
+    pub materials: HashMap<MaterialId, MaterialRecord>,
+}
+
+pub struct MaterialRecord {
+    pub name: String,
+    pub composition: Composition,
+    pub mechanical: MechanicalProperties,
+    pub thermal: ThermalProperties,
+    pub electrical: ElectricalProperties,
+    pub sources: Vec<DataSource>,
+}
+
+impl MaterialsDatabase {
+    pub fn search_by_property(
+        &self,
+        property: PropertyQuery,
+    ) -> Vec<MaterialRecord> {
+        // Search materials by property ranges
+    }
+    
+    pub fn load_builtin(&self) -> Result<(), DatabaseError> {
+        // Load built-in material property database
+    }
+}
+```
+
+#### `tpt-mat-machine-learning`
+
+Machine learning for materials discovery.
+
+```rust
+pub struct MaterialsMl {
+    pub model: MlModel,
+}
+
+pub enum MlModel {
+    PropertyPredictor {
+        // Predict properties from composition
+        features: Vec<String>,
+    },
+    PhasePredictor {
+        // Predict stable phases from composition
+    },
+    SurrogateModel {
+        // Surrogate for expensive simulations
+    },
+}
+
+impl MaterialsMl {
+    pub fn train(
+        &mut self,
+        training_data: &[(Vec<f64>, f64)],
+    ) -> TrainingResult {
+        // Train ML model on materials data
+    }
+    
+    pub fn predict(
+        &self,
+        composition: &Composition,
+    ) -> f64 {
+        // Predict property for new composition
+    }
+}
+```
+
+---
+
+## 6. Cross-Repo Integration (The Material Truth)
+
+`tpt-materials` generates the material truth consumed by all other TPT repositories.
+
+```rust
+// Example: Exporting battery degradation to tpt-energy
+use tpt_materials::energy_materials::BatteryElectrodeModel;
+use tpt_materials::energy_materials::DegradationCurve;
+
+fn generate_grid_battery_curve() -> DegradationCurve {
+    let electrode = BatteryElectrodeModel::new(
+        ActiveMaterial {
+            chemistry: BatteryChemistry::Nmc811,
+            particle_radius: 5e-6,
+            diffusion_coefficient: 1e-14,
+            partial_molar_volume: 3.5e-6,
+        },
+    );
+    
+    // Generate capacity fade curve over 10,000 cycles
+    electrode.capacity_fade_curve(10000, 25.0)
+}
+
+// This curve is then imported by tpt-energy:
+// use tpt_energy::storage::BatteryStorage;
+// let storage = BatteryStorage::with_degradation_model(curve);
+
+
+// Example: Exporting composite fatigue to tpt-transport
+use tpt_materials::micro_mechanics::CompositeMicroMechanics;
+use tpt_materials::degradation::MicrostructuralFatigue;
+
+fn generate_composite_fatigue_curve() -> FatigueCurve {
+    let composite = CompositeMicroMechanics::new(
+        Phase::carbon_fiber(),
+        Phase::epoxy_matrix(),
+        0.60,  // 60% fiber volume fraction
+    );
+    
+    let fatigue = MicrostructuralFatigue::new(
+        composite.rve(),
+        FatigueCriterion::CrystallographicSlip { critical_accumulated_shear: 0.5 },
+    );
+    
+    // Generate S-N curve for aerospace composite
+    fatigue.generate_sn_curve(1e3, 1e7)
+}
+
+
+// Example: Exporting implant biocompatibility to tpt-medical
+use tpt_materials::degradation::CorrosionModel;
+
+fn predict_implant_corrosion() -> CorrosionRate {
+    let model = CorrosionModel::new(
+        ElectrodeKinetics::titanium_alloy(),
+        ElectrodeKinetics::physiological_cathode(),
+        Electrolyte::body_fluid(),
+    );
+    
+    // Predict corrosion rate of Ti-6Al-4V implant in body
+    model.corrosion_rate(37.0, 7.4)
+}
+```
+
+---
+
+## 7. WASM Integration
+
+`tpt-mat-wasm` compiles the materials simulation stack to WebAssembly.
+
+```rust
+#[wasm_bindgen]
+pub struct WasmRveSolver {
+    rve: RepresentativeVolumeElement,
+}
+
+#[wasm_bindgen]
+impl WasmRveSolver {
+    #[wasm_bindgen(constructor)]
+    pub fn new(num_grains: u32, resolution: u32) -> WasmRveSolver {
+        // Generate Voronoi RVE in browser
+    }
+    
+    pub fn homogenize(&self, strain: &[f64]) -> WasmHomogenizedResponse {
+        // Run CP-FEM homogenization in browser
+    }
+}
+
+#[wasm_bindgen]
+pub struct WasmPhaseField {
+    solver: PhaseFieldSolver,
+}
+
+#[wasm_bindgen]
+impl WasmPhaseField {
+    pub fn step(&mut self) {
+        // Advance phase-field by one time step
+    }
+    
+    pub fn get_order_parameter(&self) -> Vec<f64> {
+        // Return field for WebGL visualization
+    }
+}
+```
+
+**WASM Use Cases:**
+- **Interactive RVE Explorer:** Materials scientist generates a polycrystal, applies strain, watches slip activate in real-time.
+- **Browser-based Phase-Field:** Simulate grain growth or spinodal decomposition without installing software.
+- **Edge Quality Control:** Run microstructure analysis on factory floor tablets during additive manufacturing.
+- **Research Reproducibility:** Share a WASM simulation link that reproduces exact results in any browser.
+
+---
+
+## 8. MIT Chain Enforcement
+
+### `deny.toml`
+
+```toml
+[licenses]
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Zlib",
+    "Unicode-3.0"
+]
+
+copyleft = "deny"
+unlicensed = "deny"
+allow-osi-fsf-free = "neither"
+```
+
+### License Traps to Avoid
+
+| Domain | GPL/Academic Trap | MIT Solution |
+|---|---|---|
+| Crystal Plasticity | DAMASK (GPL), UMAT ecosystems (proprietary) | Pure Rust CP-FEM via `tpt-fem` |
+| Phase-Field | MOOSE (LGPL), FiPy (Python/limited) | Clean-room Allen-Cahn/Cahn-Hilliard in Rust |
+| FEM Framework | FEniCS (LGPL), deal.II (LGPL) | `tpt-fem` pure Rust |
+| Molecular Dynamics | LAMMPS (GPL) | Coarse-grained models in Rust (if needed) |
+| CALPHAD | Thermo-Calc (proprietary), OpenCalphad (complex) | Clean-room thermodynamic database |
+| Mesh Generation | Gmsh (GPL), Netgen (LGPL) | Custom Voronoi/voxel meshing |
+| EBSD Analysis | OIM Analysis (proprietary), MTEX (MATLAB) | Clean-room texture analysis |
+
+---
+
+## 9. Testing & Validation Strategy
+
+### Verification & Validation (V&V)
+
+```rust
+#[cfg(test)]
+mod verification_tests {
+    use super::*;
+    
+    #[test]
+    fn test_fcc_slip_systems_count() {
+        let fcc = CrystalStructure::FCC { a: 3.6e-10 };
+        assert_eq!(fcc.slip_systems().len(), 12);
+    }
+    
+    #[test]
+    fn test_taylor_factor_fcc() {
+        // FCC Taylor factor should be ~3.06 for random texture
+        let taylor = calculate_taylor_factor_fcc();
+        assert!((taylor - 3.06).abs() < 0.1);
+    }
+    
+    #[test]
+    fn test_schmid_tensor_symmetry() {
+        let system = SlipSystem::new(
+            Vector3::new(1.0, 1.0, 0.0).normalize(),
+            Vector3::new(1.0, 1.0, 1.0).normalize(),
+        );
+        let m = system.schmid_tensor();
+        assert!(is_symmetric(&m));
+    }
+    
+    #[test]
+    fn test_phase_field_energy_decreases() {
+        // Free energy should monotonically decrease
+        let mut solver = PhaseFieldSolver::new(PhaseFieldModel::AllenCahn { .. });
+        let e0 = solver.total_free_energy();
+        solver.step_allen_cahn();
+        let e1 = solver.total_free_energy();
+        assert!(e1 < e0);
+    }
+    
+    #[test]
+    fn test_hill_mandel_condition() {
+        // σ̄:ε̄ should equal volume average of σ:ε
+        let rve = RepresentativeVolumeElement::generate_voronoi(100, ..);
+        let result = rve.homogenize(&strain);
+        let macro_work = (result.average_stress * result.average_strain).trace();
+        let micro_work = volume_average_stress_strain(&result);
+        assert!((macro_work - micro_work).abs() < 1e-6);
+    }
+}
+```
+
+### Benchmark Models
+
+```text
+test-data/golden/
+├── crystal-plasticity/
+│   ├── fcc-single-crystal-tension.json
+│   ├── bcc-polycrystal-rve.json
+│   └── taylor-factor-random.json
+├── phase-field/
+│   ├── allen-cahn-grain-growth.json
+│   ├── cahn-hilliard-spinodal.json
+│   └── kobayashi-dendrite.json
+├── micro-mechanics/
+│   ├── voronoi-rve-homogenization.json
+│   ├── mori-tanaka-stiffness.json
+│   └── composite-rule-of-mixtures.json
+├── diffusion/
+│   ├── fickian-diffusion-couple.json
+│   └── arrhenius-temperature-dependence.json
+├── degradation/
+│   ├── gtn-void-growth.json
+│   ├── fatigue-crack-initiation.json
+│   └── corrosion-polarization.json
+└── energy-materials/
+    ├── battery-sei-growth.json
+    └── electrode-capacity-fade.json
+```
+
+### Validation Standards
+
+- **ASTM E8/E8M:** Standard test methods for tension testing of metallic materials
+- **ASTM E112:** Standard test methods for determining average grain size
+- **ASTM E2103:** Standard guide for EBSD orientation imaging microscopy
+- **ISO 6892-1:** Metallic materials — Tensile testing
+- **NIST:** Reference microstructures and property data
+
+---
+
+## 10. Open Source Community & Contribution
+
+### Contribution Workflow
+
+```text
+1. Fork repository
+2. Create feature branch: `feature/hcp-slip-systems`
+3. Write code + tests
+4. Run `cargo fmt`, `cargo clippy`, `cargo test`
+5. Run `cargo deny check licenses`
+6. Submit PR with DCO sign-off
+7. RFC discussion for new constitutive models
+8. Merge after 2 approvals
+```
+
+### RFC Process
+
+New constitutive models or physics require an RFC:
+
+```text
+rfcs/
+├── 0001-crystal-plasticity-fem.md
+├── 0002-phase-field-framework.md
+├── 0003-rve-periodic-boundary.md
+├── 0004-battery-degradation-model.md
+├── 0005-additive-manufacturing.md
+└── 0006-calphad-integration.md
+```
+
+---
+
+## 11. Phased Delivery Plan
+
+### Phase 1: Foundation (Months 1-3)
+- `tpt-mat-core`, `tpt-mat-constants`, `tpt-mat-crystallography`
+- Crystal structures, Miller indices, slip systems
+- Basic elastic tensor operations
+- **Milestone:** Calculate Schmid tensors for FCC/BCC/HCP
+
+### Phase 2: Crystal Plasticity (Months 4-6)
+- `tpt-mat-crystal-plasticity` (CP-FEM core)
+- `tpt-mat-hardening` (Voce, power law)
+- `tpt-mat-texture` (pole figures, ODF)
+- **Milestone:** Single crystal tension test with correct slip activation
+
+### Phase 3: Phase-Field (Months 7-9)
+- `tpt-mat-phase-field` (Allen-Cahn, Cahn-Hilliard)
+- `tpt-mat-grain-growth` (polycrystal evolution)
+- `tpt-mat-solidification` (dendritic growth)
+- **Milestone:** Simulate spinodal decomposition and dendritic solidification
+
+### Phase 4: Diffusion & Transformation (Months 10-12)
+- `tpt-mat-diffusion` (Fick's laws)
+- `tpt-mat-phase-transform` (JMAK, Koistinen-Marburger)
+- `tpt-mat-calphad` (thermodynamic database)
+- **Milestone:** Simulate diffusion couple and phase transformation
+
+### Phase 5: Micro-Mechanics (Months 13-15)
+- `tpt-mat-rve` (Voronoi generation, periodic BCs)
+- `tpt-mat-homogenization` (Voigt, Reuss, Mori-Tanaka, FFT)
+- `tpt-mat-composite-micro` (fiber/matrix micro-mechanics)
+- **Milestone:** Polycrystal RVE homogenization with Hill-Mandel verification
+
+### Phase 6: Degradation (Months 16-18)
+- `tpt-mat-damage` (GTN model)
+- `tpt-mat-fatigue-micro` (crack initiation)
+- `tpt-mat-corrosion` (electrochemical modeling)
+- **Milestone:** Predict fatigue crack initiation site in polycrystal
+
+### Phase 7: Energy Materials & Manufacturing (Months 19-21)
+- `tpt-mat-battery` (electrode degradation)
+- `tpt-mat-additive` (AM microstructure prediction)
+- `tpt-mat-welding`, `tpt-mat-heat-treatment`
+- **Milestone:** Generate battery capacity fade curve for `tpt-energy`
+
+### Phase 8: Informatics & Ecosystem (Months 22-24)
+- `tpt-mat-database` (property database)
+- `tpt-mat-machine-learning` (surrogate models)
+- Full integration with `tpt-energy`, `tpt-transport`, `tpt-electronics`, `tpt-medical`
+- **Milestone:** End-to-end micro-to-macro pipeline (microstructure → device property)
+
+---
+
+
+---
+
+## 13. README Template
+
+```markdown
+# tpt-materials
+
+A fully open-source, MIT-licensed computational engine for micro-scale material physics: crystal plasticity, phase-field modeling, diffusion, and degradation.
+
+## Crates
+
+| Crate | Description | Status |
+|---|---|---|
+| `tpt-mat-core` | Core microstructure types | ✅ Stable |
+| `tpt-mat-crystallography` | Crystal structures, slip systems | ✅ Stable |
+| `tpt-mat-crystal-plasticity` | CP-FEM solver | 🚧 Alpha |
+| `tpt-mat-phase-field` | Allen-Cahn, Cahn-Hilliard | 🚧 Alpha |
+| `tpt-mat-rve` | RVE generation, homogenization | 🚧 Alpha |
+| `tpt-mat-diffusion` | Fick's laws, CALPHAD | 📋 Planned |
+| `tpt-mat-damage` | GTN, fatigue, corrosion | 📋 Planned |
+| `tpt-mat-battery` | Electrode degradation | 📋 Planned |
+
+## Quick Start
+
+```rust
+use tpt_materials::crystallography::{CrystalStructure, SlipSystem};
+use tpt_materials::crystal_plasticity::CrystalPlasticityModel;
+
+fn main() {
+    let fcc = CrystalStructure::FCC { a: 3.6e-10 };
+    let slip_systems = fcc.slip_systems();
+    println!("FCC has {} slip systems", slip_systems.len());
+    
+    let model = CrystalPlasticityModel::new(fcc);
+    // Run single crystal tension simulation
+}
+```
+
+## The Micro-to-Macro Bridge
+
+`tpt-materials` generates the material truth consumed by other TPT repositories:
+- `tpt-energy` ← Battery degradation curves
+- `tpt-transport` ← Composite fatigue, alloy creep
+- `tpt-electronics` ← Solder reliability
+- `tpt-medical` ← Implant biocompatibility
+
+## License
+
+Licensed under either of
+
+- MIT license ([LICENSE-MIT](LICENSE-MIT))
+- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE))
+
+at your option.
+
+
+
+---
+
+## 14. Summary
+
+`tpt-materials` is a fully open-source, MIT-licensed, pure-Rust computational engine for micro-scale material physics:
+
+- **Crystallography** — Crystal structures, slip systems, Miller indices
+- **Crystal Plasticity** — CP-FEM, hardening laws, texture analysis
+- **Phase-Field** — Allen-Cahn, Cahn-Hilliard, grain growth, solidification
+- **Micro-Mechanics** — RVE generation, homogenization, composite micro-mechanics
+- **Diffusion & Transformation** — Fick's laws, JMAK kinetics, CALPHAD
+- **Degradation** — GTN damage, microstructural fatigue, corrosion
+- **Energy Materials** — Battery electrode degradation, hydrogen storage
+- **Manufacturing** — Additive manufacturing, welding, heat treatment
+- **Informatics** — Property databases, ML surrogate models
+
+All crates maintain the strict MIT chain, leverage the TPT substrates (`tpt-math`, `tpt-engineering`, `tpt-science`, `tpt-fem`), and compile to WebAssembly for browser-based microstructure simulation.
+
+No proprietary cores. No GPL traps. No academic lock-in. Just open source.
