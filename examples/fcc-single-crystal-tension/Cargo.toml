@@ -1,0 +1,24 @@
+[package]
+name = "fcc-single-crystal-tension"
+description = "Phase 1 scaffold: prints identity orientation, FCC slip systems, and Schmid factor"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[[bin]]
+name = "fcc_single_crystal_tension"
+path = "main.rs"
+
+[dependencies]
+tpt-math-linalg-fixed = { path = "../../crates/tpt-math-linalg-fixed", version = "0.1" }
+tpt-mat-core = { path = "../../crates/tpt-mat-core", version = "0.1" }
+tpt-mat-constants = { path = "../../crates/tpt-mat-constants", version = "0.1" }
+tpt-mat-crystallography = { path = "../../crates/tpt-mat-crystallography", version = "0.1" }

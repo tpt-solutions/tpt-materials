@@ -6,28 +6,28 @@ Organization: **TPT Solutions** · License: **MIT OR Apache-2.0** (dual)
 
 ## Phase 0 — Repo Scaffolding
 
-- [ ] Workspace `Cargo.toml`
-- [ ] `.gitignore`
-- [ ] `LICENSE-MIT` (TPT Solutions copyright)
-- [ ] `LICENSE-APACHE` (TPT Solutions copyright)
-- [ ] `README.md` (spec §13 template)
-- [ ] `CONTRIBUTING.md` (fork → branch → code+tests → fmt/clippy/test → `cargo deny check licenses` → PR + DCO sign-off → RFC discussion → 2 approvals)
-- [ ] `SECURITY.md` (private disclosure process)
-- [ ] `CODE_OF_CONDUCT.md`
-- [ ] `CHANGELOG.md`
-- [ ] `deny.toml` (allow MIT/Apache-2.0/BSD-2/BSD-3/ISC/Zlib/Unicode-3.0; `copyleft = "deny"`; `unlicensed = "deny"`)
-- [ ] `rustfmt.toml`
-- [ ] `clippy.toml`
-- [ ] `.github/workflows/ci.yml`
-- [ ] `.github/workflows/license.yml`
-- [ ] `.github/workflows/benchmark.yml`
-- [ ] `.github/workflows/docs.yml`
-- [ ] `.github/workflows/release.yml`
-- [ ] `.github/ISSUE_TEMPLATE/`
-- [ ] `.github/PULL_REQUEST_TEMPLATE.md`
-- [ ] Directory skeleton: `crates/`, `examples/`, `test-data/{ebsd,crystal-structures,phase-diagrams,golden}/`, `benches/`, `docs/{book,rfc,api}/`, `rfcs/`
+- [x] Workspace `Cargo.toml`
+- [x] `.gitignore`
+- [x] `LICENSE-MIT` (TPT Solutions copyright)
+- [x] `LICENSE-APACHE` (TPT Solutions copyright)
+- [x] `README.md` (spec §13 template)
+- [x] `CONTRIBUTING.md` (fork → branch → code+tests → fmt/clippy/test → `cargo deny check licenses` → PR + DCO sign-off → RFC discussion → 2 approvals)
+- [x] `SECURITY.md` (private disclosure process)
+- [x] `CODE_OF_CONDUCT.md`
+- [x] `CHANGELOG.md`
+- [x] `deny.toml` (allow MIT/Apache-2.0/BSD-2/BSD-3/ISC/Zlib/Unicode-3.0; `copyleft = "deny"`; `unlicensed = "deny"`)
+- [x] `rustfmt.toml`
+- [x] `clippy.toml`
+- [x] `.github/workflows/ci.yml`
+- [x] `.github/workflows/license.yml`
+- [x] `.github/workflows/benchmark.yml`
+- [x] `.github/workflows/docs.yml`
+- [x] `.github/workflows/release.yml`
+- [x] `.github/ISSUE_TEMPLATE/`
+- [x] `.github/PULL_REQUEST_TEMPLATE.md`
+- [x] Directory skeleton: `crates/`, `examples/`, `test-data/{ebsd,crystal-structures,phase-diagrams,golden}/`, `benches/`, `docs/{book,rfc,api}/`, `rfcs/`
 - [ ] Public GitHub Projects roadmap board
-- [ ] Trademark note: "TPT Materials" name reserved by TPT
+- [x] Trademark note: "TPT Materials" name reserved by TPT
 
 ---
 
@@ -36,29 +36,29 @@ Organization: **TPT Solutions** · License: **MIT OR Apache-2.0** (dual)
 **Crates:** `tpt-mat-core`, `tpt-mat-constants`, `tpt-mat-crystallography`, `tpt-mat-wasm` (scaffold)
 **Substrate:** `tpt-math-linalg-fixed` (Schmid tensors, elasticity tensors)
 
-- [ ] `tpt-mat-core`
-  - [ ] `MaterialMicrostructure` (id, name, phases, grains, volume_element, temperature)
-  - [ ] `Phase` (id, name, crystal_structure, composition, volume_fraction, properties)
-  - [ ] `Grain` (id, phase, orientation, centroid, equivalent_radius, neighbors)
-  - [ ] `Composition` + `CompositionBasis` (Atomic/Weight/Mole fraction)
-  - [ ] `CrystalOrientation` + `OrientationRepresentation` (EulerBunge, Quaternion, RotationMatrix, Rodrigues, AxisAngle)
-- [ ] `tpt-mat-crystallography`
-  - [ ] `CrystalStructure` enum (FCC, BCC, HCP, Diamond, SimpleCubic, BCT, Custom) + `LatticeParameters`
-  - [ ] `MillerIndex`
-  - [ ] `SlipSystem` (slip_direction, slip_plane_normal, critical_resolved_shear_stress)
-  - [ ] `CrystalStructure::slip_systems()` for FCC (12: {111}<110>), BCC (12: {110}<111>), HCP (basal/prismatic/pyramidal)
-  - [ ] `SlipSystem::schmid_tensor()`
-  - [ ] `SlipSystem::resolved_shear_stress()`
-- [ ] `tpt-mat-constants`
-  - [ ] `PhysicalConstants` (Boltzmann, gas constant, Avogadro, Faraday, Planck)
-  - [ ] `PeriodicTable::atomic_mass()`
-  - [ ] `PeriodicTable::atomic_radius()`
-- [ ] `tpt-mat-wasm` — crate scaffold only (full bindings in later phases)
-- [ ] Verification test: FCC slip system count == 12
-- [ ] Verification test: Schmid tensor symmetry
-- [ ] Example scaffold: `fcc-single-crystal-tension` (data only, solver comes Phase 2)
+- [x] `tpt-mat-core`
+  - [x] `MaterialMicrostructure` (id, name, phases, grains, volume_element, temperature)
+  - [x] `Phase` (id, name, crystal_structure, composition, volume_fraction, properties)
+  - [x] `Grain` (id, phase, orientation, centroid, equivalent_radius, neighbors)
+  - [x] `Composition` + `CompositionBasis` (Atomic/Weight/Mole fraction)
+  - [x] `CrystalOrientation` + `OrientationRepresentation` (EulerBunge, Quaternion, RotationMatrix, Rodrigues, AxisAngle)
+- [x] `tpt-mat-crystallography`
+  - [x] `CrystalStructure` enum (FCC, BCC, HCP, Diamond, SimpleCubic, BCT, Custom) + `LatticeParameters`
+  - [x] `MillerIndex`
+  - [x] `SlipSystem` (slip_direction, slip_plane_normal, critical_resolved_shear_stress)
+  - [x] `CrystalStructure::slip_systems()` for FCC (12: {111}<110>), BCC (12: {110}<111>), HCP (basal/prismatic/pyramidal)
+  - [x] `SlipSystem::schmid_tensor()`
+  - [x] `SlipSystem::resolved_shear_stress()`
+- [x] `tpt-mat-constants`
+  - [x] `PhysicalConstants` (Boltzmann, gas constant, Avogadro, Faraday, Planck)
+  - [x] `PeriodicTable::atomic_mass()`
+  - [x] `PeriodicTable::atomic_radius()`
+- [x] `tpt-mat-wasm` — crate scaffold only (full bindings in later phases)
+- [x] Verification test: FCC slip system count == 12
+- [x] Verification test: Schmid tensor symmetry
+- [x] Example scaffold: `fcc-single-crystal-tension` (data only, solver comes Phase 2)
 
-**Milestone:** Calculate Schmid tensors for FCC/BCC/HCP
+**Milestone:** ✅ Calculate Schmid tensors for FCC/BCC/HCP
 
 ---
 
@@ -131,7 +131,7 @@ Organization: **TPT Solutions** · License: **MIT OR Apache-2.0** (dual)
 ## Phase 4 — Diffusion & Transformation (Months 10-12)
 
 **Crates:** `tpt-mat-diffusion`, `tpt-mat-phase-transform`, `tpt-mat-calphad`
-**Substrate:** `tpt-science` (Fick's laws, Darken's equation)
+**Substrate:** `tpt-science` (Fick's laws, Darken's equation); `tpt-thermodynamics` (Gibbs-energy models, phase equilibrium/flash solvers for `tpt-mat-calphad`); `tpt-systems-optimisation` (NLP/MINLP solvers backing `CalphadDatabase::equilibrium()`)
 
 - [ ] `tpt-mat-diffusion`
   - [ ] `DiffusionSolver` (grid, diffusivity, boundary_conditions)
@@ -148,8 +148,8 @@ Organization: **TPT Solutions** · License: **MIT OR Apache-2.0** (dual)
 - [ ] `tpt-mat-calphad`
   - [ ] `CalphadDatabase` (phases, elements)
   - [ ] `CalphadPhase` + `GibbsEnergyModel` + `InteractionParameter`
-  - [ ] `CalphadDatabase::gibbs_energy()`
-  - [ ] `CalphadDatabase::equilibrium()` → `PhaseEquilibrium`
+  - [ ] `CalphadDatabase::gibbs_energy()` (reuse `tpt-thermodynamics` equation-family layer: activity models, SAFT/cubic EoS where applicable)
+  - [ ] `CalphadDatabase::equilibrium()` → `PhaseEquilibrium` (Gibbs-energy minimization via `tpt-systems-optimisation` NLP/MINLP; phase stability/flash via `tpt-thermodynamics` phase solvers)
   - [ ] `CalphadDatabase::phase_diagram()` → `BinaryPhaseDiagram`
 - [ ] Golden test data: `fickian-diffusion-couple.json`, `arrhenius-temperature-dependence.json`
 - [ ] Benchmark: `benches/diffusion-couple.rs`
@@ -221,6 +221,7 @@ Organization: **TPT Solutions** · License: **MIT OR Apache-2.0** (dual)
 ## Phase 7 — Energy Materials & Manufacturing (Months 19-21)
 
 **Crates:** `tpt-mat-battery`, `tpt-mat-hydrogen-storage`, `tpt-mat-polymer`, `tpt-mat-hydrogel`, `tpt-mat-additive`, `tpt-mat-welding`, `tpt-mat-heat-treatment`
+**Substrate:** `tpt-thermodynamics` (electrolyte-chemistry domain for `tpt-mat-battery`; PVT/isotherm equations of state for `tpt-mat-hydrogen-storage`)
 
 - [ ] `tpt-mat-battery`
   - [ ] `BatteryElectrodeModel` (active_material, degradation_mechanisms)
@@ -265,6 +266,7 @@ Organization: **TPT Solutions** · License: **MIT OR Apache-2.0** (dual)
 ## Phase 8 — Informatics & Ecosystem (Months 22-24)
 
 **Crates:** `tpt-mat-database`, `tpt-mat-machine-learning`
+**Substrate:** `tpt-systems-optimisation` (parameter fitting / surrogate-model training for `tpt-mat-machine-learning`, hardening-law calibration)
 
 - [ ] `tpt-mat-database`
   - [ ] `MaterialsDatabase` (materials: HashMap<MaterialId, MaterialRecord>)

@@ -1,0 +1,29 @@
+[package]
+name = "tpt-mat-texture"
+description = "Texture analysis: pole figures, ODF (KDE), and Taylor factor for crystal-plasticity aggregates"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+authors.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+tpt-math-linalg-fixed = { path = "../tpt-math-linalg-fixed", version = "0.1" }
+tpt-mat-core = { path = "../tpt-mat-core", version = "0.1" }
+tpt-mat-crystallography = { path = "../tpt-mat-crystallography", version = "0.1" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+approx = { workspace = true }
+
+[dev-dependencies]
+approx = { workspace = true }

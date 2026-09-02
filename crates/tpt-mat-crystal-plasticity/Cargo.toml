@@ -1,0 +1,42 @@
+[package]
+name = "tpt-mat-crystal-plasticity"
+description = "Single-crystal plasticity constitutive model and per-integration-point update"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+authors.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+tpt-math-linalg-fixed = { path = "../tpt-math-linalg-fixed", version = "0.1" }
+tpt-mat-core = { path = "../tpt-mat-core", version = "0.1" }
+tpt-mat-constants = { path = "../tpt-mat-constants", version = "0.1" }
+tpt-mat-crystallography = { path = "../tpt-mat-crystallography", version = "0.1" }
+tpt-mat-hardening = { path = "../tpt-mat-hardening", version = "0.1" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+approx = { workspace = true }
+
+[dependencies.tpt-fem-solve]
+version = "0.1"
+optional = true
+
+[dependencies.tpt-fem-assembly]
+version = "0.1"
+optional = true
+
+[features]
+default = []
+fem = ["dep:tpt-fem-solve", "dep:tpt-fem-assembly"]

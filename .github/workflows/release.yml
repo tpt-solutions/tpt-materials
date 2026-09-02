@@ -1,0 +1,39 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  publish:
+    name: Publish to crates.io
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Verify workspace builds
+        run: cargo build --workspace --all-features --locked
+      - name: Run tests
+        run: cargo test --workspace --all-features --locked
+      - name: Publish crates in dependency order
+        run: |
+          set -euo pipefail
+          for crate in \
+              tpt-math-linalg-fixed \
+              tpt-mat-constants \
+              tpt-mat-core \
+              tpt-mat-crystallography \
+              tpt-mat-wasm; do
+            echo "Publishing $crate..."
+            cargo publish -p "$crate" --locked --no-verify
+            sleep 30
+          done
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true

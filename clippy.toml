@@ -1,0 +1,7 @@
+avoid-breaking-exported-api = false
+disallowed-methods = []
+disallowed-types = []
+doc-valid-idents = ["KiB", "MiB", "GiB", "TiB", "PiB", "EulerBunge", "FCC", "BCC", "HCP", "BCT", "ODF", "RVE", "FFT", "CALPHAD", "TPT", "ASTM", "ISO", "NIST"]
+too-many-arguments-threshold = 8
+type-complexity-threshold = 250
+msrv = "1.75"
