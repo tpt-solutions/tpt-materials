@@ -3,8 +3,8 @@
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use tpt_math_linalg_fixed::{Mat3, Vec3, Vec6};
 use tpt_mat_crystallography::{SlipSystem, SlipSystemError};
+use tpt_math_linalg_fixed::{Mat3, Vec3, Vec6};
 
 use crate::model::RateSensitivity;
 
@@ -99,10 +99,7 @@ pub fn viscoplastic_velocity_gradient(
 /// frame as the supplied stress (tensor convention; the supplied
 /// [`Vec6`] is the Cauchy stress tensor in Voigt order without the
 /// engineering-shear factor of 2 for the off-diagonal components).
-pub fn resolved_shear_stresses(
-    sigma: Vec6,
-    slip_systems: &[SlipSystem],
-) -> Vec<f64> {
+pub fn resolved_shear_stresses(sigma: Vec6, slip_systems: &[SlipSystem]) -> Vec<f64> {
     let s = sigma.data;
     slip_systems
         .iter()
@@ -172,6 +169,11 @@ mod tests {
         )
         .unwrap();
         let rss = resolved_shear_stresses(sigma, &[slip]);
-        assert!((rss[0] - expected).abs() < 1e-9, "got {} expected {}", rss[0], expected);
+        assert!(
+            (rss[0] - expected).abs() < 1e-9,
+            "got {} expected {}",
+            rss[0],
+            expected
+        );
     }
 }

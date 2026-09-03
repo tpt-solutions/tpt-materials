@@ -30,8 +30,8 @@ mod state;
 
 pub use elastic::{ElasticStiffness, ElasticStiffnessError, SymmetricFourthOrder};
 pub use fem::{
-    solve_increment_single_point, BoundaryConditions, CpFemResult, CpFemSolver, FemError,
-    LoadStep, ReactionForce, StressUpdate,
+    solve_increment_single_point, BoundaryConditions, CpFemResult, CpFemSolver, FemError, LoadStep,
+    ReactionForce, StressUpdate,
 };
 pub use flow::{power_law_slip_rate, viscoplastic_velocity_gradient, PlasticIncrement};
 pub use model::{CrystalPlasticityModel, RateSensitivity};

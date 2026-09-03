@@ -2,8 +2,8 @@
 
 use serde::{Deserialize, Serialize};
 
-use tpt_math_linalg_fixed::Mat3;
 use tpt_mat_hardening::HardeningState;
+use tpt_math_linalg_fixed::Mat3;
 
 /// State of one single crystal during a deformation simulation:
 /// accumulated plastic deformation, lattice rotation, and hardening.

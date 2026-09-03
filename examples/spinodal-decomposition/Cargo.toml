@@ -1,0 +1,23 @@
+[package]
+name = "spinodal-decomposition"
+description = "Phase 3 example: Cahn-Hilliard spinodal decomposition on a 2D grid"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[[bin]]
+name = "spinodal_decomposition"
+path = "main.rs"
+
+[dependencies]
+tpt-math-linalg-fixed = { path = "../../crates/tpt-math-linalg-fixed", version = "0.1" }
+tpt-science = { path = "../../crates/tpt-science", version = "0.1" }
+tpt-mat-phase-field = { path = "../../crates/tpt-mat-phase-field", version = "0.1" }

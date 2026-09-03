@@ -1,6 +1,6 @@
 [package]
 name = "fcc-single-crystal-tension"
-description = "Phase 1 scaffold: prints identity orientation, FCC slip systems, and Schmid factor"
+description = "Phase 2 example: applies an FCC single-crystal tension increment and reports slip activation"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -22,3 +22,6 @@ tpt-math-linalg-fixed = { path = "../../crates/tpt-math-linalg-fixed", version =
 tpt-mat-core = { path = "../../crates/tpt-mat-core", version = "0.1" }
 tpt-mat-constants = { path = "../../crates/tpt-mat-constants", version = "0.1" }
 tpt-mat-crystallography = { path = "../../crates/tpt-mat-crystallography", version = "0.1" }
+tpt-mat-hardening = { path = "../../crates/tpt-mat-hardening", version = "0.1" }
+tpt-mat-crystal-plasticity = { path = "../../crates/tpt-mat-crystal-plasticity", version = "0.1" }
+tpt-mat-texture = { path = "../../crates/tpt-mat-texture", version = "0.1" }

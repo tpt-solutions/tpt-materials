@@ -1,0 +1,27 @@
+[package]
+name = "tpt-mat-phase-field"
+description = "Phase-field method: Allen-Cahn, Cahn-Hilliard, Kobayashi, multi-phase on regular grids"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+authors.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+tpt-math-linalg-fixed = { path = "../tpt-math-linalg-fixed", version = "0.1" }
+tpt-science = { path = "../tpt-science", version = "0.1" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+approx = { workspace = true }

@@ -17,9 +17,7 @@ mod voce;
 
 pub use latent::LatentHardeningMatrix;
 pub use state::HardeningState;
-pub use voce::{
-    CombinedParams, KocksMeckingParams, PowerLawParams, VoceParams,
-};
+pub use voce::{CombinedParams, KocksMeckingParams, PowerLawParams, VoceParams};
 
 /// Voce saturating hardening:
 /// `τ_c^α = τ_0^α + (τ_s^α − τ_0^α) (1 − exp(−γ^α / γ_c^α)) + θ_0^α γ^α`
@@ -55,8 +53,8 @@ impl HardeningLaw for VoceHardening {
         for alpha in 0..n {
             let gamma = state.accumulated_shear[alpha];
             let p = self.params;
-            let voce_increment = (p.tau_s - p.tau_0) * (1.0 - (-gamma / p.gamma_c).exp())
-                + p.theta_0 * gamma;
+            let voce_increment =
+                (p.tau_s - p.tau_0) * (1.0 - (-gamma / p.gamma_c).exp()) + p.theta_0 * gamma;
             state.crss[alpha] = p.tau_0 + voce_increment;
         }
         // Pure Voce ignores cross-hardening; latent matrix is the
@@ -138,8 +136,7 @@ impl HardeningLaw for KocksMeckingHardening {
         for alpha in 0..n {
             state.accumulated_shear[alpha] += delta_gamma[alpha];
             let gamma_inc = state.accumulated_shear[alpha];
-            state.crss[alpha] =
-                p.tau_s - (p.tau_s - p.tau_0) * (-gamma_inc / gamma_c).exp();
+            state.crss[alpha] = p.tau_s - (p.tau_s - p.tau_0) * (-gamma_inc / gamma_c).exp();
         }
         let _ = latent;
     }

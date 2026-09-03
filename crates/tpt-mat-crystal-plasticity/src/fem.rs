@@ -23,8 +23,8 @@
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use tpt_math_linalg_fixed::{Mat3, Vec3, Vec6};
 use tpt_mat_hardening::{HardeningState, LatentHardeningMatrix};
+use tpt_math_linalg_fixed::{Mat3, Vec3, Vec6};
 
 use crate::flow::{
     power_law_slip_rate, resolved_shear_stresses, viscoplastic_velocity_gradient, FlowRuleError,
@@ -187,11 +187,7 @@ impl CpFemSolver {
         let mut accumulated = Vec::with_capacity(self.material.len());
         let mut strains = Vec::with_capacity(self.material.len());
         let strain_increment = load.strain_increment;
-        for (model, state) in self
-            .material
-            .iter()
-            .zip(self.hardening_state.iter_mut())
-        {
+        for (model, state) in self.material.iter().zip(self.hardening_state.iter_mut()) {
             // The FEM substrate (when wired in) computes the consistent
             // tangent and assembles the residual; here we apply a single
             // small-strain radial-return update as the constitutive
@@ -245,17 +241,28 @@ pub fn solve_increment_single_point(
     let sigma = sigma_trial;
     // 2. Resolved shear stresses.
     let rss = resolved_shear_stresses(sigma, &model.slip_systems);
-    // 3. Solve Δγ^α via the power-law flow rule.  For simplicity, use a
-    // single explicit predictor: Δγ^α = γ̇^α Δt.  Full implicit
-    // radial-return lives in the FEM substrate.
-    let dt = 1.0_f64; // stand-alone unit test; FEM supplies Δt.
+    // 3. Solve Δγ^α via the power-law flow rule.  We use the strain-
+    //    rate reference to derive an implied Δt from the supplied
+    //    strain increment: `Δt = ||Δε|| / γ̇_0`.  The full FEM
+    //    substrate overrides this with the integration-scheme Δt.
+    let eps_norm_sq: f64 = strain_increment.data.iter().map(|x| x * x).sum();
+    let eps_norm = eps_norm_sq.sqrt();
+    let dt = if model.rate_sensitivity.reference_strain_rate > 0.0 {
+        (eps_norm / model.rate_sensitivity.reference_strain_rate).max(1e-12)
+    } else {
+        1.0
+    };
     let mut delta_gamma = Vec::with_capacity(n_slip);
     for (alpha, &tau) in rss.iter().enumerate() {
         let g = power_law_slip_rate(tau, crss[alpha].max(1e-9), &model.rate_sensitivity)?;
         delta_gamma.push(g * dt);
     }
     // 4. Plastic velocity gradient.
-    let s_dirs: Vec<_> = model.slip_systems.iter().map(|s| s.slip_direction).collect();
+    let s_dirs: Vec<_> = model
+        .slip_systems
+        .iter()
+        .map(|s| s.slip_direction)
+        .collect();
     let n_dirs: Vec<_> = model.slip_systems.iter().map(|s| s.plane_normal).collect();
     let l_p = viscoplastic_velocity_gradient(&s_dirs, &n_dirs, &delta_gamma)
         .map_err(|_| FemError::Flow(FlowRuleError::NonPositiveCrss))?;
@@ -279,10 +286,10 @@ pub fn solve_increment_single_point(
 mod tests {
     use super::*;
     use crate::elastic::SymmetricFourthOrder;
-    use tpt_math_linalg_fixed::SymMat3;
     use approx::assert_relative_eq;
     use tpt_mat_crystallography::CrystalStructure;
     use tpt_mat_hardening::{Hardening, VoceHardening, VoceParams};
+    use tpt_math_linalg_fixed::SymMat3;
 
     fn fcc_model() -> CrystalPlasticityModel {
         CrystalPlasticityModel::from_crystal_structure(
@@ -336,9 +343,12 @@ mod tests {
         let model = fcc_model();
         let slips = model.slip_systems.clone();
         let mut state = HardeningState::from_crss(&slips);
-        let upd =
-            solve_increment_single_point(&model, &mut state, &Vec6::new(0.001, 0.0, 0.0, 0.0, 0.0, 0.0))
-                .unwrap();
+        let upd = solve_increment_single_point(
+            &model,
+            &mut state,
+            &Vec6::new(0.001, 0.0, 0.0, 0.0, 0.0, 0.0),
+        )
+        .unwrap();
         let w = upd.lattice_rotation_increment;
         for i in 0..3 {
             for j in 0..3 {

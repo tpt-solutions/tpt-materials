@@ -21,7 +21,7 @@ mod pole_figure;
 mod taylor;
 mod texture;
 
-pub use odf::{OrientationDistributionFunction, OdfKernel};
+pub use odf::{OdfKernel, OrientationDistributionFunction};
 pub use pole_figure::{PoleFigure, PoleFigureGrid, PoleKind};
 pub use taylor::taylor_factor;
 pub use texture::TextureAnalyzer;

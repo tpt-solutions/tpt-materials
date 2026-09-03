@@ -33,11 +33,7 @@ pub fn taylor_factor(n_samples: usize, seed: u64) -> f64 {
 }
 
 /// Taylor factor with an explicit slip-system list.
-pub fn taylor_factor_with_slips(
-    slips: &[SlipSystem],
-    n_samples: usize,
-    seed: u64,
-) -> f64 {
+pub fn taylor_factor_with_slips(slips: &[SlipSystem], n_samples: usize, seed: u64) -> f64 {
     let mut rng = Lcg::new(seed.max(1));
     let mut acc = 0.0;
     let mut count = 0;
@@ -75,7 +71,10 @@ impl Lcg {
         Self(seed)
     }
     fn next_u64(&mut self) -> u64 {
-        self.0 = self.0.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
+        self.0 = self
+            .0
+            .wrapping_mul(6364136223846793005)
+            .wrapping_add(1442695040888963407);
         self.0
     }
     fn next_f64(&mut self) -> f64 {

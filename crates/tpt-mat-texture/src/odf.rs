@@ -124,8 +124,10 @@ mod tests {
         let g0 = CrystalOrientation::identity();
         let ta1 = TextureAnalyzer::new(vec![g0], vec![1.0]);
         let ta2 = TextureAnalyzer::new(vec![g0, g0, g0], vec![1.0, 1.0, 1.0]);
-        let odf1 = ta1.orientation_distribution_function(OdfKernel::GeodesicGaussian { sigma: 0.05 });
-        let odf2 = ta2.orientation_distribution_function(OdfKernel::GeodesicGaussian { sigma: 0.05 });
+        let odf1 =
+            ta1.orientation_distribution_function(OdfKernel::GeodesicGaussian { sigma: 0.05 });
+        let odf2 =
+            ta2.orientation_distribution_function(OdfKernel::GeodesicGaussian { sigma: 0.05 });
         // Same total weight after normalisation, so the peak should be
         // identical.
         let p1 = odf1.evaluate(g0);

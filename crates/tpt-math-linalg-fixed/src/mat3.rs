@@ -39,9 +39,7 @@ impl Mat3 {
     /// Construct from row vectors.
     pub fn from_rows(r0: [f64; 3], r1: [f64; 3], r2: [f64; 3]) -> Self {
         Self::new(
-            r0[0], r0[1], r0[2],
-            r1[0], r1[1], r1[2],
-            r2[0], r2[1], r2[2],
+            r0[0], r0[1], r0[2], r1[0], r1[1], r1[2], r2[0], r2[1], r2[2],
         )
     }
 
@@ -66,11 +64,7 @@ impl Mat3 {
     /// Transpose.
     pub fn transpose(self) -> Self {
         let d = self.data;
-        Self::new(
-            d[0], d[3], d[6],
-            d[1], d[4], d[7],
-            d[2], d[5], d[8],
-        )
+        Self::new(d[0], d[3], d[6], d[1], d[4], d[7], d[2], d[5], d[8])
     }
 
     /// Trace.
@@ -82,8 +76,7 @@ impl Mat3 {
     /// Determinant.
     pub fn det(self) -> f64 {
         let d = self.data;
-        d[0] * (d[4] * d[8] - d[5] * d[7])
-            - d[3] * (d[1] * d[8] - d[7] * d[2])
+        d[0] * (d[4] * d[8] - d[5] * d[7]) - d[3] * (d[1] * d[8] - d[7] * d[2])
             + d[6] * (d[1] * d[5] - d[4] * d[2])
     }
 
@@ -95,45 +88,46 @@ impl Mat3 {
             panic!("Mat3 inverse: singular matrix");
         }
         let inv_det = 1.0 / det;
+        // Column-major storage: data[3j+i] = m_ij.  Each slot of
+        // `Mat3::new` corresponds to data[0]=m11, data[3]=m12,
+        // data[6]=m13, data[1]=m21, data[4]=m22, data[7]=m23,
+        // data[2]=m31, data[5]=m32, data[8]=m33.
         Self::new(
-            (d[4] * d[8] - d[5] * d[7]) * inv_det,
-            (d[2] * d[7] - d[1] * d[8]) * inv_det,
-            (d[1] * d[5] - d[2] * d[4]) * inv_det,
-            (d[5] * d[6] - d[3] * d[8]) * inv_det,
-            (d[0] * d[8] - d[2] * d[6]) * inv_det,
+            (d[4] * d[8] - d[7] * d[5]) * inv_det,
+            (d[6] * d[5] - d[3] * d[8]) * inv_det,
+            (d[3] * d[7] - d[6] * d[4]) * inv_det,
+            (d[7] * d[2] - d[1] * d[8]) * inv_det,
+            (d[0] * d[8] - d[6] * d[2]) * inv_det,
+            (d[6] * d[1] - d[0] * d[7]) * inv_det,
+            (d[1] * d[5] - d[4] * d[2]) * inv_det,
             (d[3] * d[2] - d[0] * d[5]) * inv_det,
-            (d[3] * d[7] - d[4] * d[6]) * inv_det,
-            (d[1] * d[6] - d[0] * d[7]) * inv_det,
-            (d[0] * d[4] - d[1] * d[3]) * inv_det,
+            (d[0] * d[4] - d[3] * d[1]) * inv_det,
         )
     }
 
     /// Symmetric part `½(M + Mᵀ)`.
     pub fn sym(self) -> Self {
         let t = self.transpose();
-        let a = (self.data[0] + t.data[0]) * 0.5;
-        let b = (self.data[1] + t.data[1]) * 0.5;
-        let c = (self.data[2] + t.data[2]) * 0.5;
-        let d = (self.data[4] + t.data[4]) * 0.5;
-        let e = (self.data[5] + t.data[5]) * 0.5;
-        let f = (self.data[8] + t.data[8]) * 0.5;
-        Self::new(a, b, c, b, d, e, c, e, f)
+        // Column-major: data[3j+i] = m_ij.  t is computed via
+        // transpose so t.data = [m11, m12, m13, m21, m22, m23, m31, m32, m33].
+        let d = self.data;
+        let m11 = (d[0] + t.data[0]) * 0.5;
+        let m12 = (d[3] + t.data[1]) * 0.5;
+        let m13 = (d[6] + t.data[2]) * 0.5;
+        let m22 = (d[4] + t.data[4]) * 0.5;
+        let m23 = (d[7] + t.data[5]) * 0.5;
+        let m33 = (d[8] + t.data[8]) * 0.5;
+        Self::new(m11, m12, m13, m12, m22, m23, m13, m23, m33)
     }
 
     /// Skew (anti-symmetric) part `½(M − Mᵀ)`.
     pub fn skew(self) -> Self {
         let t = self.transpose();
-        Self::new(
-            0.0,
-            (self.data[1] - t.data[1]) * 0.5,
-            (self.data[2] - t.data[2]) * 0.5,
-            (t.data[1] - self.data[1]) * 0.5,
-            0.0,
-            (self.data[5] - t.data[5]) * 0.5,
-            (t.data[2] - self.data[2]) * 0.5,
-            (t.data[5] - self.data[5]) * 0.5,
-            0.0,
-        )
+        let d = self.data;
+        let m12 = (d[3] - t.data[1]) * 0.5;
+        let m13 = (d[6] - t.data[2]) * 0.5;
+        let m23 = (d[7] - t.data[5]) * 0.5;
+        Self::new(0.0, m12, m13, -m12, 0.0, m23, -m13, -m23, 0.0)
     }
 
     /// Frobenius norm squared.
@@ -152,9 +146,15 @@ impl Mat3 {
     pub fn scale(self, s: f64) -> Self {
         let d = self.data;
         Self::new(
-            d[0] * s, d[1] * s, d[2] * s,
-            d[3] * s, d[4] * s, d[5] * s,
-            d[6] * s, d[7] * s, d[8] * s,
+            d[0] * s,
+            d[1] * s,
+            d[2] * s,
+            d[3] * s,
+            d[4] * s,
+            d[5] * s,
+            d[6] * s,
+            d[7] * s,
+            d[8] * s,
         )
     }
 }

@@ -1,0 +1,24 @@
+[package]
+name = "dendritic-solidification"
+description = "Phase 3 example: Kobayashi dendritic solidification with 4-fold anisotropy"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[[bin]]
+name = "dendritic_solidification"
+path = "main.rs"
+
+[dependencies]
+tpt-math-linalg-fixed = { path = "../../crates/tpt-math-linalg-fixed", version = "0.1" }
+tpt-science = { path = "../../crates/tpt-science", version = "0.1" }
+tpt-mat-phase-field = { path = "../../crates/tpt-mat-phase-field", version = "0.1" }
+tpt-mat-solidification = { path = "../../crates/tpt-mat-solidification", version = "0.1" }

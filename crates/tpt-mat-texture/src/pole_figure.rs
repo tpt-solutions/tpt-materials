@@ -44,9 +44,7 @@ impl PoleKind {
             PoleKind::Bcc110 => Vec3::new(1.0, 1.0, 0.0).normalized(),
             PoleKind::Hcp0001 => Vec3::new(0.0, 0.0, 1.0),
             PoleKind::Hcp10T10 => Vec3::new(1.0, -1.0, 0.0).normalized(),
-            PoleKind::Custom(d) => {
-                Vec3::new(d[0] as f64, d[1] as f64, d[2] as f64).normalized()
-            }
+            PoleKind::Custom(d) => Vec3::new(d[0] as f64, d[1] as f64, d[2] as f64).normalized(),
         }
     }
 }
@@ -101,7 +99,11 @@ impl TextureAnalyzer {
             let phi = d_sample[2].clamp(-1.0, 1.0).acos();
             // Longitude from x-axis in the equatorial plane.
             let theta = d_sample[1].atan2(d_sample[0]);
-            let theta = if theta < 0.0 { theta + 2.0 * std::f64::consts::PI } else { theta };
+            let theta = if theta < 0.0 {
+                theta + 2.0 * std::f64::consts::PI
+            } else {
+                theta
+            };
             let lat = ((phi / (std::f64::consts::FRAC_PI_2)) * grid.n_lat as f64) as usize;
             let lon = ((theta / (2.0 * std::f64::consts::PI)) * grid.n_lon as f64) as usize;
             let lat = lat.min(grid.n_lat - 1);

@@ -107,10 +107,26 @@ impl Grid2D {
             for j in 0..self.nx {
                 let c = self.idx(i, j);
                 let u_c = u[c];
-                let up = if i + 1 < self.ny { u[self.idx(i + 1, j)] } else { u[self.idx(i - 1, j)] };
-                let um = if i > 0 { u[self.idx(i - 1, j)] } else { u[self.idx(i + 1, j)] };
-                let ur = if j + 1 < self.nx { u[self.idx(i, j + 1)] } else { u[self.idx(i, j - 1)] };
-                let ul = if j > 0 { u[self.idx(i, j - 1)] } else { u[self.idx(i, j + 1)] };
+                let up = if i + 1 < self.ny {
+                    u[self.idx(i + 1, j)]
+                } else {
+                    u[self.idx(i - 1, j)]
+                };
+                let um = if i > 0 {
+                    u[self.idx(i - 1, j)]
+                } else {
+                    u[self.idx(i + 1, j)]
+                };
+                let ur = if j + 1 < self.nx {
+                    u[self.idx(i, j + 1)]
+                } else {
+                    u[self.idx(i, j - 1)]
+                };
+                let ul = if j > 0 {
+                    u[self.idx(i, j - 1)]
+                } else {
+                    u[self.idx(i, j + 1)]
+                };
                 out[c] = (up + um + ur + ul - 4.0 * u_c) * inv_dx2;
             }
         }
@@ -143,8 +159,10 @@ impl Grid2D {
                 let jp = (j + 1) % self.nx;
                 let jm = (j + self.nx - 1) % self.nx;
                 let c = self.idx(i, j);
-                out[c] = (u[self.idx(ip, j)] + u[self.idx(im, j)]
-                    + u[self.idx(i, jp)] + u[self.idx(i, jm)]
+                out[c] = (u[self.idx(ip, j)]
+                    + u[self.idx(im, j)]
+                    + u[self.idx(i, jp)]
+                    + u[self.idx(i, jm)]
                     - 4.0 * u[c])
                     * inv_dx2;
             }

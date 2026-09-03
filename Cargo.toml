@@ -9,8 +9,13 @@ members = [
     "crates/tpt-mat-hardening",
     "crates/tpt-mat-crystal-plasticity",
     "crates/tpt-mat-texture",
+    "crates/tpt-mat-phase-field",
+    "crates/tpt-mat-grain-growth",
+    "crates/tpt-mat-solidification",
     "crates/tpt-mat-wasm",
     "examples/fcc-single-crystal-tension",
+    "examples/spinodal-decomposition",
+    "examples/dendritic-solidification",
 ]
 
 [workspace.package]
