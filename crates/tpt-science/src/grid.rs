@@ -98,6 +98,14 @@ impl Grid2D {
 
     /// Apply the 5-point Laplacian with zero-flux Neumann boundaries.
     /// Inputs / outputs are flat length-`nx*ny` row-major arrays.
+    ///
+    /// Uses the mirror-ghost-cell form (one-sided at the edge): at a
+    /// boundary cell the missing neighbour is taken to be the interior
+    /// one, which gives `2 u_nbr − 2 u_c` in the boundary stencil —
+    /// equivalent to the `u_ghost = u_interior` Neumann condition.  This
+    /// is *not* strictly mass-conservative in the discrete sense (sum of
+    /// the Laplacian over the grid is not exactly zero); mass is
+    /// conserved only to the order of the truncation error.
     pub fn laplacian_neumann(&self, u: &[f64], out: &mut [f64]) {
         let n = self.len();
         assert_eq!(u.len(), n);
@@ -109,23 +117,31 @@ impl Grid2D {
                 let u_c = u[c];
                 let up = if i + 1 < self.ny {
                     u[self.idx(i + 1, j)]
-                } else {
+                } else if i > 0 {
                     u[self.idx(i - 1, j)]
+                } else {
+                    u_c
                 };
                 let um = if i > 0 {
                     u[self.idx(i - 1, j)]
-                } else {
+                } else if i + 1 < self.ny {
                     u[self.idx(i + 1, j)]
+                } else {
+                    u_c
                 };
                 let ur = if j + 1 < self.nx {
                     u[self.idx(i, j + 1)]
-                } else {
+                } else if j > 0 {
                     u[self.idx(i, j - 1)]
+                } else {
+                    u_c
                 };
                 let ul = if j > 0 {
                     u[self.idx(i, j - 1)]
-                } else {
+                } else if j + 1 < self.nx {
                     u[self.idx(i, j + 1)]
+                } else {
+                    u_c
                 };
                 out[c] = (up + um + ur + ul - 4.0 * u_c) * inv_dx2;
             }

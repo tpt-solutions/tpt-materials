@@ -1,0 +1,25 @@
+[package]
+name = "calphad-binary-phase-diagram"
+description = "Binary A-B phase diagram from Redlich-Kister excess Gibbs energy, demonstration of tpt-mat-calphad"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+authors.workspace = true
+
+[lints]
+workspace = true
+
+[[bin]]
+name = "calphad-binary-phase-diagram"
+path = "src/main.rs"
+
+[dependencies]
+tpt-mat-calphad = { path = "../../crates/tpt-mat-calphad", version = "0.1" }
+serde_json = { workspace = true }

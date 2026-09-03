@@ -1,0 +1,26 @@
+[package]
+name = "taylor-factor-fcc"
+description = "Bishop-Hill Taylor factor for FCC polycrystals under uniaxial tension"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+authors.workspace = true
+
+[lints]
+workspace = true
+
+[[bin]]
+name = "taylor-factor-fcc"
+path = "src/main.rs"
+
+[dependencies]
+tpt-mat-rve = { path = "../../crates/tpt-mat-rve", version = "0.1" }
+tpt-mat-crystallography = { path = "../../crates/tpt-mat-crystallography", version = "0.1" }
+serde_json = { workspace = true }

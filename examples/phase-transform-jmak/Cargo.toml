@@ -1,0 +1,25 @@
+[package]
+name = "phase-transform-jmak"
+description = "JMAK Avrami TTT diagram + Koistinen-Marburger martensite, demonstration of tpt-mat-phase-transform"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+authors.workspace = true
+
+[lints]
+workspace = true
+
+[[bin]]
+name = "phase-transform-jmak"
+path = "src/main.rs"
+
+[dependencies]
+tpt-mat-phase-transform = { path = "../../crates/tpt-mat-phase-transform", version = "0.1" }
+serde_json = { workspace = true }

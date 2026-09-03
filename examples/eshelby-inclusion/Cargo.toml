@@ -1,0 +1,27 @@
+[package]
+name = "eshelby-inclusion"
+description = "Eshelby spherical inclusion and Mori-Tanaka homogenization for a stiff particle in an Al matrix"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+authors.workspace = true
+
+[lints]
+workspace = true
+
+[[bin]]
+name = "eshelby-inclusion"
+path = "src/main.rs"
+
+[dependencies]
+tpt-mat-homogenization = { path = "../../crates/tpt-mat-homogenization", version = "0.1" }
+tpt-mat-composite-micro = { path = "../../crates/tpt-mat-composite-micro", version = "0.1" }
+tpt-mat-crystal-plasticity = { path = "../../crates/tpt-mat-crystal-plasticity", version = "0.1" }
+tpt-math-linalg-fixed = { path = "../../crates/tpt-math-linalg-fixed", version = "0.1" }

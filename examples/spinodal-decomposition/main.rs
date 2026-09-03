@@ -7,9 +7,7 @@
 //! time is the canonical verification that the discretisation is
 //! dissipative.
 
-use tpt_mat_phase_field::{
-    BulkEnergy, PhaseFieldModel, PhaseFieldSolver, RegularSolutionParams,
-};
+use tpt_mat_phase_field::{BulkEnergy, PhaseFieldModel, PhaseFieldSolver, RegularSolutionParams};
 use tpt_science::Grid2D;
 
 fn main() {
@@ -24,8 +22,7 @@ fn main() {
     for (idx, v) in c.iter_mut().enumerate() {
         let i = idx / n;
         let j = idx % n;
-        let phi = 2.0 * std::f64::consts::PI
-            * ((i as f64) * 0.05 + (j as f64) * 0.07);
+        let phi = 2.0 * std::f64::consts::PI * ((i as f64) * 0.05 + (j as f64) * 0.07);
         *v = 0.5 + 0.05 * phi.sin() + 0.03 * (2.0 * phi).cos();
     }
     let mean: f64 = c.iter().sum::<f64>() / c.len() as f64;
@@ -36,7 +33,10 @@ fn main() {
         0.001,
         1.0,
         1.0,
-        BulkEnergy::RegularSolution(RegularSolutionParams { omega: 4.0, rt: 1.0 }),
+        BulkEnergy::RegularSolution(RegularSolutionParams {
+            omega: 4.0,
+            rt: 1.0,
+        }),
         &c,
     )
     .unwrap();
@@ -51,19 +51,16 @@ fn main() {
         snap.free_energy,
         snap.free_energy - e0
     );
-    println!(
-        "interface area: {a0:.1} → {:.1}",
-        snap.interface_area
-    );
+    println!("interface area: {a0:.1} → {:.1}", snap.interface_area);
 
-    let mean_final: f64 = solver
-        .concentration
-        .iter()
-        .sum::<f64>()
-        / solver.concentration.len() as f64;
+    let mean_final: f64 =
+        solver.concentration.iter().sum::<f64>() / solver.concentration.len() as f64;
     println!("final mean concentration = {mean_final:.6}");
 
-    assert!(snap.free_energy <= e0 + 1e-6, "free energy must not increase");
+    assert!(
+        snap.free_energy <= e0 + 1e-6,
+        "free energy must not increase"
+    );
     // Neumann-flux boundary scheme conserves mean composition to round-off
     // times grid size; allow a small numerical drift.
     assert!(

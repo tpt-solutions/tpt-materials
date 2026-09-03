@@ -1,0 +1,26 @@
+[package]
+name = "diffusion-carbon-steel"
+description = "1D carbon diffusion in a steel plate, demonstration of tpt-mat-diffusion"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+authors.workspace = true
+
+[lints]
+workspace = true
+
+[[bin]]
+name = "diffusion-carbon-steel"
+path = "src/main.rs"
+
+[dependencies]
+tpt-mat-diffusion = { path = "../../crates/tpt-mat-diffusion", version = "0.1" }
+tpt-science = { path = "../../crates/tpt-science", version = "0.1" }
+serde_json = { workspace = true }

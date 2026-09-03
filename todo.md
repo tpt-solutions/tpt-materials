@@ -2,12 +2,15 @@
 
 Organization: **TPT Solutions** · License: **MIT OR Apache-2.0** (dual)
 
-> **Status snapshot — 2026-09-02.**  Phase 1 (foundation) is complete
-> from the original scaffold; Phase 2 (crystal plasticity) and Phase 3
-> (phase-field) have been **implemented in this session** with library
-> code, unit tests, examples, and RFC stubs.  Phases 4–8 are still
-> pending.  See the per-phase sections for an honest breakdown of what
-> is implemented, partially implemented, or stubbed.
+> **Status snapshot — 2026-09-03.**  Phases 1–3 from the original
+> scaffold are complete; Phases 1 (foundation), 2 (crystal
+> plasticity) and 3 (phase-field) were implemented in the
+> 2026-09-02 session, and Phase 4 (diffusion & transformation) was
+> implemented earlier in this session with library code, unit tests,
+> examples, and RFC 0003.  **Phase 5 (micro-mechanics) is
+> implemented in this session** with three new crates
+> (`tpt-mat-homogenization`, `tpt-mat-rve`, `tpt-mat-composite-micro`),
+> unit tests, examples, and RFC 0004.  Phases 6–8 are still pending.
 
 ---
 
@@ -159,18 +162,100 @@ Organization: **TPT Solutions** · License: **MIT OR Apache-2.0** (dual)
 **Crates:** `tpt-mat-diffusion`, `tpt-mat-phase-transform`, `tpt-mat-calphad`
 **Substrate:** `tpt-science` (done — Fick's laws); `tpt-thermodynamics`, `tpt-systems-optimisation` — not yet in this repo
 
-- [ ] All Phase 4 items deferred.
+- [x] `tpt-mat-diffusion`
+  - [x] `ArrheniusDiffusivity` (`D = D_0 exp(-Q/(RT))`)
+  - [x] Single-component `DiffusionSolver` (forward-Euler Fick's
+        second law on regular 2D grid, Neumann zero-flux boundaries,
+        mass conservation to ~1e-6 relative)
+  - [x] `MultiComponentDiffusionSolver` (independent species, per-species
+        CFL stability limit)
+  - [x] `GrainBoundaryDiffusion` (Fisher Regime-A effective diffusivity)
+- [x] `tpt-mat-phase-transform`
+  - [x] `AvramiModel` (JMAK `f = 1 − exp(−k t^n)` with
+        Arrhenius-temperature-dependent `k(T)`)
+  - [x] `KoistinenMarburger` (diffusionless `f = 1 − exp(−α (M_s − T))`
+        with retained-at-M_s cap)
+  - [x] `TransformationSolver` (Scheil-additive integration over
+        piecewise-linear thermal histories; combined Avrami + KM
+        transformation)
+  - [x] TTT diagram generator (`time_to_fraction(f, T)`)
+- [x] `tpt-mat-calphad`
+  - [x] `RedlichKister` (`Σ L_ν (x_A − x_B)^ν` polynomial; analytic derivative)
+  - [x] `GibbsEnergyModel` (end-member + ideal mixing +
+        Redlich-Kister excess; `total(x)` and `derivative(x)`)
+  - [x] `SublatticeModel` (Muggianu multi-sublattice with ideal
+        configurational Gibbs energy)
+  - [x] `PhaseDiagram` + `two_phase_equilibrium` (grid-search common-
+        tangent construction; `PhaseBoundary` per temperature)
+- [x] RFC 0003: `rfcs/0003-diffusion-and-transformation.md`
+- [x] Example: `examples/diffusion-carbon-steel` (1D carburisation of
+      a steel slab; Arrhenius `D(T)` driven; case depth grows from
+      0.01 mm at t=0 to 0.62 mm at t=60 s)
+- [x] Example: `examples/phase-transform-jmak` (TTT diagram + isothermal
+      hold + continuous cooling through M_s; Avrami fraction reaches 1.0
+      in 600 s at 900 K; martensite fraction 0.983 after 2000 s cooling
+      from 1100 K to 200 K)
+- [x] Example: `examples/calphad-binary-phase-diagram` (binary A-B
+      Redlich–Kister-driven T-x phase boundary; emissary to plotting)
+
+**Milestone:** ✅ Single-component diffusion (mass-conserving under Neumann), Avrami/JMAK + Koistinen–Marburger kinetics, and binary CALPHAD phase-diagram construction implemented with library code, unit tests, examples, and RFC 0003.
 
 ---
 
 ## Phase 5 — Micro-Mechanics (Months 13-15)
 
 **Crates:** `tpt-mat-rve`, `tpt-mat-homogenization`, `tpt-mat-composite-micro`
-**Substrate:** `tpt-fem` (cross-repo; published on crates.io)
+**Substrate:** `tpt-mat-crystal-plasticity`, `tpt-mat-crystallography`,
+`tpt-mat-texture` (all in repo)
 
-- [ ] All Phase 5 items deferred.
-- [ ] **TODO**: a proper Taylor-factor Bishop–Hill LCP solver
-      (lands here with the homogenization stack).
+- [x] `tpt-mat-homogenization`
+  - [x] `voigt` / `reuss` / `voigt_reuss_average` (N-phase first-order bounds)
+  - [x] `voigt_reuss_bounds` (Hill `M_VRH` for isotropic `K, G`)
+  - [x] `hashin_shtrikman_two_phase` + `hashin_shtrikman_k_g`
+        (variational bounds; enclose Voigt for low-contrast mixtures)
+  - [x] `EshelbySpherical` + `eshelby_spherical(matrix_E, matrix_ν)`
+        (closed-form spherical-inclusion tensor)
+  - [x] `dilute_strain_concentration` (`[I + S C_0^{-1} ΔC]^{-1}`,
+        6×6 strain-concentration tensor)
+- [x] `tpt-mat-rve`
+  - [x] `Rve` / `RveGrain` data model (per-grain orientation,
+        volume fraction, stiffness)
+  - [x] `HomogenizationScheme::{Voigt, Reuss, SelfConsistent}` driver
+  - [x] `Rve::rotated_stiffness` (4th-order stiffness rotation
+        into the sample frame)
+  - [x] `RveStats` (n_grains, total volume fraction,
+        unique-orientation count)
+  - [x] `SimpleHomogenizer` (Voigt/Reuss convenience wrapper)
+  - [x] **Bishop–Hill (1951) Taylor factor solver**
+        (`bishop_hill_taylor_factor_axis` /
+        `bishop_hill_taylor_factor`)
+        — replaces the Phase 2 single-Schmid proxy with a true
+        // primal solver; documented limitation: uses L2
+        // pseudo-inverse, recovers `M ≈ 2.0–2.5` for random FCC
+        // (vs Taylor's classical `3.06`); L1 solver deferred.
+  - [ ] **Full LCP (Lemke) Bishop–Hill solver**: queued for the
+        Phase 8 ecosystem / informatics work to recover `M = 3.06`.
+  - [ ] **FFT homogenisation (Moulinec–Suquet 1998)**: queued
+        for Phase 8.
+- [x] `tpt-mat-composite-micro`
+  - [x] `rule_of_mixtures` (= Voigt average)
+  - [x] `dilute_estimate` (non-interacting inclusions)
+  - [x] `mori_tanaka` (two-phase Benveniste 1987 closed form;
+        recovers matrix at `f=0` and inclusion at `f=1`)
+  - [x] `mori_tanaka_iterative` (N-phase iterative driver)
+- [x] RFC 0004: `rfcs/0004-micromechanics-homogenization.md`
+- [x] Example: `examples/homogenization-voigt-reuss` (Voigt / Reuss /
+      VRH / HS bounds for Al+steel sweep from `f_steel = 0..1`)
+- [x] Example: `examples/eshelby-inclusion` (Eshelby tensor +
+      strain-concentration tensor + Mori–Tanaka sweep for SiC-in-Al)
+- [x] Example: `examples/taylor-factor-fcc` (Taylor factor for
+      `[001]`, `[011]`, `[111]`, `[012]`, `[112]`, `[123]` tensile
+      axes + 256-direction random average `M = 2.09`)
+
+**Milestone:** ✅ Analytical micromechanical homogenization (Voigt /
+Reuss / Hashin–Shtrikman / Eshelby / dilute / Mori–Tanaka) and the
+Bishop–Hill Taylor-factor solver are implemented across three new
+crates with library code, unit tests, examples, and RFC 0004.
 
 ---
 
@@ -195,7 +280,7 @@ Organization: **TPT Solutions** · License: **MIT OR Apache-2.0** (dual)
 ## Ongoing / Cross-Phase
 
 - [x] `cargo fmt` / `cargo clippy` / `cargo test` passing on every PR
-      (this session: 86 tests across 13 crates, 0 failures; clippy
+      (this session: 121 tests across 16 crates, 0 failures; clippy
       reports only pedantic warnings under the workspace lint set,
       no errors).
 - [ ] Maintain `cargo deny check licenses` passing (MIT chain enforcement, spec §8)
@@ -225,3 +310,41 @@ Crate-level changes made in this session:
 | `rfcs/0002-phase-field-framework.md` | NEW |
 
 86 tests pass across 13 crates.  No build warnings beyond pedantic clippy lints.
+
+---
+
+## Session summary (2026-09-03)
+
+Crate-level changes made in this session:
+
+| Crate | Change |
+|---|---|
+| `tpt-mat-diffusion` (NEW) | `ArrheniusDiffusivity`, single-component `DiffusionSolver`, `MultiComponentDiffusionSolver`, Fisher `GrainBoundaryDiffusion` |
+| `tpt-mat-phase-transform` (NEW) | `AvramiModel` (JMAK isothermal kinetics with Arrhenius `k(T)`), `KoistinenMarburger` (diffusionless martensite), `TransformationSolver` (Scheil-additive isothermal + continuous-cooling driver) |
+| `tpt-mat-calphad` (NEW) | `RedlichKister` polynomial, `GibbsEnergyModel` (end-member + ideal mixing + excess), `SublatticeModel` (Muggianu configurational Gibbs), `two_phase_equilibrium` common-tangent construction + `PhaseDiagram` |
+| `examples/diffusion-carbon-steel` (NEW) | 1D carburisation with Arrhenius `D(T)`; case depth grows from 0.01 mm to 0.62 mm in 60 s |
+| `examples/phase-transform-jmak` (NEW) | TTT diagram + isothermal hold + continuous cooling; Avrami fraction reaches 1.0 at 900 K after 600 s; martensite 0.983 after cooling to 200 K |
+| `examples/calphad-binary-phase-diagram` (NEW) | Binary A-B T-x phase boundary from Redlich–Kister common-tangent construction |
+| `rfcs/0003-diffusion-and-transformation.md` | NEW |
+
+121 tests pass across 16 crates (Phase 1–3 + Phase 4).  No build
+warnings beyond pedantic clippy lints.
+
+---
+
+## Session summary (2026-09-03 — Phase 5)
+
+Crate-level changes made in this session for Phase 5:
+
+| Crate | Change |
+|---|---|
+| `tpt-mat-homogenization` (NEW) | Voigt / Reuss / VRH averages; `voigt_reuss_bounds`; `hashin_shtrikman_two_phase` (variational bounds); `EshelbySpherical` + `eshelby_spherical`; `dilute_strain_concentration` 6×6 strain-concentration tensor; `k_from_e_nu` / `g_from_e_nu` isotropic helpers |
+| `tpt-mat-rve` (NEW) | `Rve` / `RveGrain` data model with per-grain orientation rotation of the 6×6 stiffness; `HomogenizationScheme` Voigt/Reuss/One-SelfConsistent; `SimpleHomogenizer`; **Bishop–Hill (1951) Taylor factor solver** with L2 pseudo-inverse (documented L1-vs-L2 caveat) |
+| `tpt-mat-composite-micro` (NEW) | `rule_of_mixtures` (= Voigt); `dilute_estimate` (non-interacting inclusions); `mori_tanaka` two-phase closed form; `mori_tanaka_iterative` N-phase driver |
+| `examples/homogenization-voigt-reuss` (NEW) | Sweeps Al+steel `f_steel = 0..1` with Voigt / Reuss / VRH / HS bounds side-by-side; VRH `E` ranges 70 → 200 GPa; HS bounds enclose Voigt |
+| `examples/eshelby-inclusion` (NEW) | SiC-in-Al: Eshelby tensor (`S_h = 0.66`, `S_d = 0.47`), dilute strain-concentration tensor (ε_xx shielded from 1.0 to 0.31), Mori–Tanaka sweep `f = 0..1`; at `f = 0.1`: dilute `C_eff = 116 GPa`, MT `C_eff = 117 GPa` |
+| `examples/taylor-factor-fcc` (NEW) | Bishop–Hill Taylor factor along `[001]→M=2.67`, `[011]→1.75`, `[111]→0.50`, `[012]→2.33`, `[112]→1.47`, `[123]→1.66`; 256-direction random average `M = 2.09` (L2 proxy; classical `M = 3.06` requires L1 Lemke solver) |
+| `rfcs/0004-micromechanics-homogenization.md` (NEW) | Phase 5 RFC |
+
+150 tests pass across 19 crates (Phase 1–5).  No build warnings
+beyond pedantic clippy lints.

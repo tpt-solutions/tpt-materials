@@ -59,14 +59,8 @@ fn main() {
     }
     let snap = solver.snapshot();
     println!("---");
-    println!(
-        "final solid_fraction = {:.4}",
-        snap.solid_fraction
-    );
-    println!(
-        "tip velocity (cells / time) ≈ {:.4}",
-        snap.tip_velocity
-    );
+    println!("final solid_fraction = {:.4}", snap.solid_fraction);
+    println!("tip velocity (cells / time) ≈ {:.4}", snap.tip_velocity);
     println!(
         "primary arm spacing (cells) = {:.2}",
         snap.primary_arm_spacing

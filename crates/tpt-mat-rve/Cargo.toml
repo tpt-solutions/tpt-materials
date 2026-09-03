@@ -1,0 +1,29 @@
+[package]
+name = "tpt-mat-rve"
+description = "Representative Volume Element (RVE) framework for polycrystal homogenization"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+authors.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+tpt-math-linalg-fixed = { path = "../tpt-math-linalg-fixed", version = "0.1" }
+tpt-mat-crystallography = { path = "../tpt-mat-crystallography", version = "0.1" }
+tpt-mat-crystal-plasticity = { path = "../tpt-mat-crystal-plasticity", version = "0.1" }
+tpt-mat-homogenization = { path = "../tpt-mat-homogenization", version = "0.1" }
+tpt-mat-texture = { path = "../tpt-mat-texture", version = "0.1" }
+serde = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+approx = { workspace = true }
