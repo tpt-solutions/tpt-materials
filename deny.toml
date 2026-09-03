@@ -8,27 +8,37 @@ db-urls = ["https://github.com/rustsec/advisory-db"]
 yanked = "warn"
 ignore = []
 
+# Pure-MIT dependency policy (see LICENSING.md).
+#
+# Every dependency in the tree MUST offer a license that lets a
+# downstream consumer take it under MIT or something strictly more
+# permissive.  Concretely:
+#
+#   * "MIT OR Apache-2.0" (the common Rust dual license)  -> OK via MIT
+#   * "Apache-2.0" ALONE                                  -> DENIED
+#   * MPL-2.0 / any copyleft / GPL / LGPL                 -> DENIED
+#
+# Apache-2.0 is deliberately absent from `allow`: an SPDX expression
+# like "MIT OR Apache-2.0" is still satisfied (MIT is allowed), but a
+# crate licensed Apache-2.0-only fails CI so we can replace it.
 [licenses]
 version = 2
 allow = [
     "MIT",
-    "Apache-2.0",
-    "Apache-2.0 WITH LLVM-exception",
+    "MIT-0",
     "BSD-2-Clause",
     "BSD-3-Clause",
+    "0BSD",
     "ISC",
     "Zlib",
+    "BSL-1.0",
     "Unicode-3.0",
+    "Unicode-DFS-2016",
     "CC0-1.0",
-    "MPL-2.0",
-    "OpenSSL",
+    "Unlicense",
 ]
-confidence-threshold = 0.8
-copyleft = "deny"
-unlicensed = "deny"
-allow-osi-fsf-free = false
-default = "deny"
-exception = 0
+confidence-threshold = 0.9
+unused-allowed-license = "warn"
 
 [licenses.private]
 ignore = false

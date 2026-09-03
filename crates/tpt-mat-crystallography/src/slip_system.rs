@@ -122,7 +122,7 @@ impl SlipSystem {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use approx::assert_relative_eq;
+    use tpt_testkit::assert_relative_eq;
 
     #[test]
     fn schmid_tensor_is_symmetric() {

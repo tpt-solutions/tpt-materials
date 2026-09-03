@@ -72,7 +72,7 @@ pub fn rupture_time_norton(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use approx::assert_relative_eq;
+    use tpt_testkit::assert_relative_eq;
 
     #[test]
     fn creep_rate_is_zero_below_zero_stress() {

@@ -54,7 +54,7 @@ pub fn plastic_strain_at(params: &CoffinMansonParams, n_f: f64) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use approx::assert_relative_eq;
+    use tpt_testkit::assert_relative_eq;
 
     #[test]
     fn coffin_manson_round_trip() {

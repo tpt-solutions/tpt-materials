@@ -154,7 +154,7 @@ fn inv6(m: [[f64; 6]; 6]) -> [[f64; 6]; 6] {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use approx::assert_relative_eq;
+    use tpt_testkit::assert_relative_eq;
     use tpt_math_linalg_fixed::SymMat3;
 
     #[test]

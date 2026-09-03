@@ -1,0 +1,21 @@
+[package]
+name = "heat-treatment-steel"
+description = "Heat-treatment example: anneal, quench, temper, and age an AISI 4140-style steel and report Vickers hardness"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+authors.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+tpt-mat-heat-treatment = { path = "../../crates/tpt-mat-heat-treatment", version = "0.1" }

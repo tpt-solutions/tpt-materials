@@ -94,7 +94,7 @@ pub fn paris_lifetime(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use approx::assert_relative_eq;
+    use tpt_testkit::assert_relative_eq;
 
     #[test]
     fn crack_growth_rate_is_zero_below_threshold() {

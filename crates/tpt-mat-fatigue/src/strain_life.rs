@@ -95,7 +95,7 @@ pub fn transition_cycles(params: &StrainLifeParams) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use approx::assert_relative_eq;
+    use tpt_testkit::assert_relative_eq;
 
     #[test]
     fn strain_amplitude_at_half_cycle_is_max() {

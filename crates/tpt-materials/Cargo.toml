@@ -1,0 +1,175 @@
+[package]
+name = "tpt-materials"
+description = "Umbrella / facade crate re-exporting every tpt-mat-* domain crate behind optional features"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+authors.workspace = true
+
+[lints]
+workspace = true
+
+[features]
+default = []
+full = [
+    "crystallography",
+    "crystal-plasticity",
+    "hardening",
+    "texture",
+    "phase-field",
+    "grain-growth",
+    "solidification",
+    "diffusion",
+    "phase-transform",
+    "calphad",
+    "homogenization",
+    "rve",
+    "composite-micro",
+    "damage",
+    "fatigue",
+    "creep",
+    "heat-treatment",
+    "database",
+    "wasm",
+]
+
+crystallography = ["crystallography_dep"]
+crystal-plasticity = ["crystal_plasticity_dep", "hardening_dep"]
+hardening = ["hardening_dep"]
+texture = ["texture_dep"]
+phase-field = ["phase_field_dep"]
+grain-growth = ["grain_growth_dep"]
+solidification = ["solidification_dep"]
+diffusion = ["diffusion_dep"]
+phase-transform = ["phase_transform_dep"]
+calphad = ["calphad_dep"]
+homogenization = ["homogenization_dep"]
+rve = ["rve_dep"]
+composite-micro = ["composite_micro_dep"]
+damage = ["damage_dep"]
+fatigue = ["fatigue_dep"]
+creep = ["creep_dep"]
+heat-treatment = ["heat_treatment_dep"]
+database = ["database_dep"]
+wasm = ["wasm_dep"]
+
+[dependencies.crystallography_dep]
+path = "../tpt-mat-crystallography"
+version = "0.1"
+optional = true
+package = "tpt-mat-crystallography"
+
+[dependencies.crystal_plasticity_dep]
+path = "../tpt-mat-crystal-plasticity"
+version = "0.1"
+optional = true
+package = "tpt-mat-crystal-plasticity"
+
+[dependencies.hardening_dep]
+path = "../tpt-mat-hardening"
+version = "0.1"
+optional = true
+package = "tpt-mat-hardening"
+
+[dependencies.texture_dep]
+path = "../tpt-mat-texture"
+version = "0.1"
+optional = true
+package = "tpt-mat-texture"
+
+[dependencies.phase_field_dep]
+path = "../tpt-mat-phase-field"
+version = "0.1"
+optional = true
+package = "tpt-mat-phase-field"
+
+[dependencies.grain_growth_dep]
+path = "../tpt-mat-grain-growth"
+version = "0.1"
+optional = true
+package = "tpt-mat-grain-growth"
+
+[dependencies.solidification_dep]
+path = "../tpt-mat-solidification"
+version = "0.1"
+optional = true
+package = "tpt-mat-solidification"
+
+[dependencies.diffusion_dep]
+path = "../tpt-mat-diffusion"
+version = "0.1"
+optional = true
+package = "tpt-mat-diffusion"
+
+[dependencies.phase_transform_dep]
+path = "../tpt-mat-phase-transform"
+version = "0.1"
+optional = true
+package = "tpt-mat-phase-transform"
+
+[dependencies.calphad_dep]
+path = "../tpt-mat-calphad"
+version = "0.1"
+optional = true
+package = "tpt-mat-calphad"
+
+[dependencies.homogenization_dep]
+path = "../tpt-mat-homogenization"
+version = "0.1"
+optional = true
+package = "tpt-mat-homogenization"
+
+[dependencies.rve_dep]
+path = "../tpt-mat-rve"
+version = "0.1"
+optional = true
+package = "tpt-mat-rve"
+
+[dependencies.composite_micro_dep]
+path = "../tpt-mat-composite-micro"
+version = "0.1"
+optional = true
+package = "tpt-mat-composite-micro"
+
+[dependencies.damage_dep]
+path = "../tpt-mat-damage"
+version = "0.1"
+optional = true
+package = "tpt-mat-damage"
+
+[dependencies.fatigue_dep]
+path = "../tpt-mat-fatigue"
+version = "0.1"
+optional = true
+package = "tpt-mat-fatigue"
+
+[dependencies.creep_dep]
+path = "../tpt-mat-creep"
+version = "0.1"
+optional = true
+package = "tpt-mat-creep"
+
+[dependencies.heat_treatment_dep]
+path = "../tpt-mat-heat-treatment"
+version = "0.1"
+optional = true
+package = "tpt-mat-heat-treatment"
+
+[dependencies.database_dep]
+path = "../tpt-mat-database"
+version = "0.1"
+optional = true
+package = "tpt-mat-database"
+
+[dependencies.wasm_dep]
+path = "../tpt-mat-wasm"
+version = "0.1"
+optional = true
+package = "tpt-mat-wasm"

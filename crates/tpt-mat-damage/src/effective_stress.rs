@@ -36,7 +36,7 @@ pub fn stress_triaxiality(sigma_1: f64, sigma_2: f64, sigma_3: f64) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use approx::assert_relative_eq;
+    use tpt_testkit::assert_relative_eq;
 
     #[test]
     fn effective_stress_is_infinite_at_rupture() {

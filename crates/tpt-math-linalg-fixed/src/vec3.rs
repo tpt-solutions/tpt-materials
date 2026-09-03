@@ -179,7 +179,7 @@ impl Div<f64> for Vec3 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use approx::assert_relative_eq;
+    use tpt_testkit::assert_relative_eq;
 
     #[test]
     fn dot_and_cross() {

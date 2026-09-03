@@ -30,12 +30,17 @@
 #![warn(missing_docs)]
 
 mod effective_stress;
+mod gtn;
 mod kachanov;
 mod lemaitre;
 mod miner;
 
 pub use effective_stress::{
     effective_stress, effective_youngs_modulus, stress_triaxiality,
+};
+pub use gtn::{
+    gtn_yield_function, has_failed, is_coalescing, update_porosity,
+    GtnParams, Q1_DEFAULT, Q2_DEFAULT, Q3_DEFAULT,
 };
 pub use kachanov::{
     kachanov_damage_rate, kachanov_rupture_time, KachanovParams,

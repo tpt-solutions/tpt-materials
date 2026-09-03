@@ -62,7 +62,7 @@ pub fn rupture_time_monkman_grant(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use approx::assert_relative_eq;
+    use tpt_testkit::assert_relative_eq;
 
     #[test]
     fn rupture_time_recovers_c_mg_at_unit_rate() {

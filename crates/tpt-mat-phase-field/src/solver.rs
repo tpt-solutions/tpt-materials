@@ -421,7 +421,7 @@ impl PhaseFieldSolver {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use approx::assert_relative_eq;
+    use tpt_testkit::assert_relative_eq;
 
     fn small_grid(n: usize) -> Grid2D {
         Grid2D::new(n, n, 1.0)

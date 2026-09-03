@@ -67,7 +67,7 @@ pub fn endurance_limit(params: &BasquinParams) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use approx::assert_relative_eq;
+    use tpt_testkit::assert_relative_eq;
 
     #[test]
     fn basquin_round_trip() {

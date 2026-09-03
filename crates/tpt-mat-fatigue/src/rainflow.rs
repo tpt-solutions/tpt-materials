@@ -114,36 +114,23 @@ pub fn rainflow_count(history: &[f64]) -> RainflowResult {
     }
     let mut stack: Vec<f64> = Vec::with_capacity(n);
     let mut cycles: Vec<Cycle> = Vec::new();
-    for i in 0..n {
-        let x = points[i];
+    let extended: Vec<f64> = points
+        .iter()
+        .chain(points.iter().take(2))
+        .copied()
+        .collect();
+    for &x in &extended {
         stack.push(x);
-        // Try to extract cycles while the top three turning points
-        // form a complete cycle.
-        while stack.len() >= 3 {
+        // Need at least 4 points to apply the four-point rule.
+        while stack.len() >= 4 {
             let len = stack.len();
-            let x_curr = stack[len - 1];
-            let x_prev = stack[len - 2];
-            let x_prev2 = stack[len - 3];
-            // Range of the second-most-recent turning point pair.
-            let range_prev = (x_prev2 - stack[len - 4.min(2) + 1]).abs();
-            // For a three-point stack we compare X_{i-1}-X_{i-2} with
-            // X_i - X_{i-1}; if the former is ≥ the latter, we
-            // extract the previous pair.
-            let range_curr = (x_curr - x_prev).abs();
-            // We need four points to apply the four-point rule; with
-            // only three points we can extract (X_{i-1}, X_{i-2})
-            // directly when X_{i-1} has been pushed.
-            if len == 3 {
-                cycles.push(Cycle::from_min_max(stack[1], stack[0]));
-                stack.remove(0);
-                stack.remove(0);
-                break;
-            }
-            let range_x = (stack[len - 2] - stack[len - 3]).abs();
-            let range_y = (stack[len - 1] - stack[len - 2]).abs();
-            let _ = (range_prev, range_curr, range_x);
-            // Extract if X < Y (the new range is smaller).
-            if range_y < range_x {
+            // Range of the *previous* pair (Y_{i-1}).
+            let range_prev = (stack[len - 2] - stack[len - 3]).abs();
+            // Range of the *current* pair (Y_i).
+            let range_curr = (stack[len - 1] - stack[len - 2]).abs();
+            // Extract a cycle if the previous range is *strictly*
+            // greater than the current range.
+            if range_prev > range_curr {
                 cycles.push(Cycle::from_min_max(stack[len - 2], stack[len - 3]));
                 stack.remove(len - 2);
                 stack.remove(len - 3);
@@ -151,11 +138,16 @@ pub fn rainflow_count(history: &[f64]) -> RainflowResult {
                 break;
             }
         }
+        // Stop if we've consumed all the original turning points
+        // plus a couple (to handle the cyclic wrap-around without
+        // double-counting).
+        if stack.len() >= n + 1 {
+            break;
+        }
     }
     // Remaining stack entries form residual half-cycles.
     let mut residuals = Vec::new();
     if stack.len() >= 2 {
-        // Pair residual turning points in order.
         let mut i = 0;
         while i + 1 < stack.len() {
             residuals.push(Cycle::from_min_max(stack[i], stack[i + 1]));

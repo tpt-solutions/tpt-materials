@@ -225,7 +225,7 @@ fn inv6(m: [[f64; 6]; 6]) -> [[f64; 6]; 6] {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use approx::assert_relative_eq;
+    use tpt_testkit::assert_relative_eq;
 
     #[test]
     fn eshelby_spherical_zero_inclusion_stiffness_gives_unity_concentration() {

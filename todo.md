@@ -10,7 +10,19 @@ Organization: **TPT Solutions** · License: **MIT OR Apache-2.0** (dual)
 > examples, and RFC 0003.  **Phase 5 (micro-mechanics) is
 > implemented in this session** with three new crates
 > (`tpt-mat-homogenization`, `tpt-mat-rve`, `tpt-mat-composite-micro`),
-> unit tests, examples, and RFC 0004.  Phases 6–8 are still pending.
+> unit tests, examples, and RFC 0004.  **Phases 6–8 are still
+> pending implementation but are now fully task-broken-down from
+> `spec.txt`** (this session), and a **Phase 9** was added to cover
+> the soft-matter / hydrogen-storage crates the spec defines but
+> never schedules.  Phase 6 also folds in three classical
+> analytical crates already drafted this session (`tpt-mat-creep`,
+> `tpt-mat-damage`, `tpt-mat-fatigue`) that are not yet committed.
+> A **crate-organisation review** (2026-09-03) then added **Phase 10**
+> (fracture, precipitation, effective thermal properties,
+> dislocation-density plasticity, hydrogen embrittlement — standard
+> topics no spec crate covered), a `tpt-materials` facade-crate task
+> under Phase 8, and a "Workspace organisation notes" section
+> (flat-layout rationale + backlog + out-of-scope decisions).
 
 ---
 
@@ -261,19 +273,340 @@ crates with library code, unit tests, examples, and RFC 0004.
 
 ## Phase 6 — Degradation (Months 16-18)
 
-- [ ] All Phase 6 items deferred.
+**Crates (spec §5 Domain 6):** `tpt-mat-damage`, `tpt-mat-fatigue-micro`, `tpt-mat-corrosion`
+**Substrate:** `tpt-mat-crystal-plasticity`, `tpt-mat-rve` (FIP fields), `tpt-science` (electrochemistry)
+
+> **Naming / scope note.**  The spec names `tpt-mat-fatigue-micro`
+> (RVE-based crack initiation) and a GTN-based `tpt-mat-damage`.
+> This repo already carries **three classical analytical crates**
+> (`tpt-mat-creep`, `tpt-mat-damage` = Kachanov/Lemaitre/Miner CDM,
+> `tpt-mat-fatigue` = Basquin/Coffin–Manson/Paris/rainflow).
+> Decision: **keep both** — the classical crates stay, and the
+> spec's micro-mechanical models are added alongside (GTN into
+> `tpt-mat-damage`; a new `tpt-mat-fatigue-micro` for the RVE path).
+
+### Already implemented this session (untracked — pending commit)
+
+- [x] `tpt-mat-creep` — Norton–Bailey power-law, θ-projection
+      (Wilshire–Burt), Monkman–Grant, Larson–Miller, Sherby–Dorn
+      (19 unit tests)
+- [x] `tpt-mat-damage` (classical CDM) — Kachanov effective stress,
+      Lemaitre ductile damage, Kachanov creep-damage, Miner linear
+      accumulation, Chaboche placeholder (19 unit tests)
+- [x] `tpt-mat-fatigue` (classical) — Basquin S–N, Coffin–Manson LCF,
+      Manson–Coffin–Basquin strain-life, Walker mean-stress, Paris /
+      Forman / Walker / NASGRO crack growth, ASTM E1049 rainflow
+      (27 unit tests)
+- [ ] Register `tpt-mat-creep` / `tpt-mat-damage` / `tpt-mat-fatigue`
+      in workspace and commit; add per-crate RFC coverage
+
+### Spec items still to build
+
+- [ ] `tpt-mat-damage` — Gurson–Tvergaard–Needleman
+  - [ ] `GursonTvergaardNeedleman` params (`f_0`, `f_c`, `f_f`,
+        `q_1`, `q_2`, `q_3`, `f_n`, `s_n`, `e_n`)
+  - [ ] `yield_function(stress, porosity, matrix_yield)`
+        (`Φ = (σ_eq/σ_y)² + 2q₁f cosh(3q₂σ_m/2σ_y) − (1 + q₃f²)`)
+  - [ ] `update_porosity` (void growth `(1−f)dε^p_kk` + strain-controlled
+        nucleation `A dε^p_eq`)
+  - [ ] Verification test: GTN yield surface → von Mises as `f → 0`
+- [ ] `tpt-mat-fatigue-micro`
+  - [ ] `MicrostructuralFatigue { rve, criterion }`
+  - [ ] `FatigueCriterion`: `Findley`, `FatemiSocie`,
+        `SmithWatsonTopper`, `CrystallographicSlip { critical_accumulated_shear }`
+  - [ ] `fatigue_indicator_parameter(&CpFemResult) -> Vec<f64>` (FIP field)
+  - [ ] `predict_crack_initiation(&[LoadStep]) -> CrackInitiationResult`
+        (`cycles_to_initiation`, `critical_grain`, `critical_location`,
+        `fip_field`)
+  - [ ] Cycle-by-cycle CP-FEM driver accumulating plastic slip at
+        grain boundaries
+- [ ] `tpt-mat-corrosion`
+  - [ ] `ElectrodeKinetics { exchange_current_density, tafel_slope,
+        equilibrium_potential }`
+  - [ ] `CorrosionModel { anode, cathode, electrolyte }`
+  - [ ] `corrosion_rate(temperature, ph) -> CorrosionRate`
+        (Butler–Volmer mixed-potential solve; `current_density`,
+        `penetration_rate` mm/yr, `mass_loss_rate` g/m²·day)
+  - [ ] `polarization_curve(potential_range) -> PolarizationCurve`
+        (anodic / cathodic Tafel branches)
+- [ ] RFC 0005: degradation & failure models (GTN + FIP + Butler–Volmer)
+- [ ] Golden test data: `test-data/golden/degradation/`
+      (`gtn-void-growth.json`, `fatigue-crack-initiation.json`,
+      `corrosion-polarization.json`)
+- [ ] Example: `examples/fatigue-crack-initiation` (polycrystal RVE →
+      FIP field → critical grain)
+- [ ] Example: `examples/corrosion-polarization` (Ti-6Al-4V
+      polarization curve + penetration rate)
+
+**Milestone:** Predict fatigue crack initiation site in a polycrystal
+(critical grain + cycles-to-initiation from the FIP field).
 
 ---
 
 ## Phase 7 — Energy Materials & Manufacturing (Months 19-21)
 
-- [ ] All Phase 7 items deferred.
+**Crates (spec §5 Domains 8-9):** `tpt-mat-battery`, `tpt-mat-additive`,
+`tpt-mat-welding`, `tpt-mat-heat-treatment`
+**Substrate:** `tpt-mat-diffusion`, `tpt-mat-phase-transform`,
+`tpt-mat-calphad`, `tpt-mat-solidification`, `tpt-mat-grain-growth`
+
+- [ ] `tpt-mat-battery`
+  - [ ] `ActiveMaterial { chemistry, particle_radius,
+        diffusion_coefficient, partial_molar_volume }`
+  - [ ] `BatteryChemistry` (NMC811, LFP, NCA, graphite, silicon, …)
+  - [ ] `DegradationMechanism`: `SeiGrowth { rate_constant,
+        activation_energy }`, `ParticleCracking { critical_stress }`,
+        `LithiumPlating { plating_potential }`,
+        `TransitionMetalDissolution { dissolution_rate }`
+  - [ ] `simulate_diffusion_stress(c_rate, num_cycles)` — coupled
+        Li diffusion + diffusion-induced stress in a spherical particle
+        (reuses `tpt-mat-diffusion`)
+  - [ ] `capacity_fade_curve(cycles, temperature) -> DegradationCurve`
+        (`cycles`, `capacity_retention`, `resistance_growth`)
+  - [ ] Verification test: capacity retention monotonically decreasing;
+        √t SEI-limited fade at low C-rate
+- [ ] `tpt-mat-additive`
+  - [ ] `AmProcess`: `LaserPowderBedFusion { laser_power, scan_speed,
+        hatch_spacing, layer_thickness }`, `DirectedEnergyDeposition`,
+        `ElectronBeamMelting`
+  - [ ] `thermal_history(location) -> ThermalHistory`
+        (Rosenthal / moving-source analytic solution)
+  - [ ] `predict_microstructure(&ThermalHistory) -> PredictedMicrostructure`
+        (`grain_size`, `phase_fractions`, `texture`, `porosity`;
+        columnar/equiaxed from G–R solidification map)
+  - [ ] `residual_stress(&ThermalHistory) -> ResidualStressField`
+        (thermal-contraction eigenstrain)
+  - [ ] Verification test: higher cooling rate → finer predicted grain
+        size (Hall–Petch trend)
+- [ ] `tpt-mat-welding`
+  - [ ] `WeldModel { base_metal, filler_metal, process }`
+  - [ ] `heat_affected_zone(heat_input) -> HazResult` (HAZ width +
+        peak-temperature profile)
+  - [ ] `predict_haz_microstructure(cooling_rate) -> HazMicrostructure`
+        (grain coarsening + transformation via `tpt-mat-phase-transform`)
+- [ ] `tpt-mat-heat-treatment`
+  - [ ] `HeatTreatmentProcess`: `Annealing`, `Quenching { medium }`,
+        `Tempering`, `Aging`, `SolutionTreatment`
+  - [ ] `simulate(&HeatTreatmentProcess) -> HeatTreatmentResult`
+        (final phase fractions + grain size, CALPHAD + TTT driven)
+  - [ ] `predict_hardness(&PredictedMicrostructure) -> f64`
+        (rule-of-mixtures / Maynier-type regression)
+- [ ] RFC 0006: additive-manufacturing microstructure & residual stress
+- [ ] RFC 0007: heat-treatment / welding transformation pipeline
+- [ ] Golden test data: `test-data/golden/energy-materials/`
+      (`battery-sei-growth.json`, `electrode-capacity-fade.json`)
+- [ ] Example: `examples/battery-electrode-degradation` (NMC811
+      capacity fade curve — the artifact exported to `tpt-energy`)
+- [ ] Example: `examples/additive-manufacturing-microstructure`
+      (LPBF thermal history → grain structure + residual stress)
+
+**Milestone:** Generate a battery capacity fade curve consumable by
+`tpt-energy` (`DegradationCurve` over ≥10 000 cycles).
 
 ---
 
 ## Phase 8 — Informatics & Ecosystem (Months 22-24)
 
-- [ ] All Phase 8 items deferred.
+**Crates (spec §5 Domain 10):** `tpt-mat-database`, `tpt-mat-machine-learning`
+**Plus:** cross-repo integration (spec §6), WASM bindings (spec §7),
+deferred solver upgrades from Phases 2 & 5
+
+- [ ] `tpt-mat-database`
+  - [ ] `MaterialRecord { name, composition, mechanical, thermal,
+        electrical, sources }`
+  - [ ] `MaterialsDatabase { materials }` + `load_builtin()`
+        (bundled MIT-clean property set)
+  - [ ] `search_by_property(PropertyQuery) -> Vec<MaterialRecord>`
+        (property-range queries)
+  - [ ] `DataSource` provenance (ASTM / ISO / NIST traceability, spec §9)
+- [ ] `tpt-mat-machine-learning`
+  - [ ] `MlModel`: `PropertyPredictor { features }`, `PhasePredictor`,
+        `SurrogateModel`
+  - [ ] `train(&[(Vec<f64>, f64)]) -> TrainingResult`
+  - [ ] `predict(&Composition) -> f64`
+  - [ ] Verification test: surrogate reproduces a CP-FEM / homogenization
+        sweep within tolerance
+- [ ] **Full LCP (Lemke) Bishop–Hill Taylor-factor solver** (carried
+      from Phase 5) — recover `M ≈ 3.06` for random FCC
+- [ ] **FFT homogenisation (Moulinec–Suquet 1998)** (carried from
+      Phase 5) — spectral full-field RVE in `tpt-mat-homogenization`
+- [ ] **Full CP-FEM assembly + Newton–Raphson** (carried from Phase 2)
+      once `tpt-fem` mesh handles are available
+- [ ] Cross-repo output adapters (spec §6):
+  - [ ] `tpt-energy` ← battery `DegradationCurve`
+  - [ ] `tpt-transport` ← composite fatigue S–N + alloy creep (`tpt-mat-creep`)
+  - [ ] `tpt-electronics` ← solder-joint fatigue / reliability
+  - [ ] `tpt-medical` ← implant corrosion rate / biocompatibility
+- [ ] WASM (spec §7): `tpt-mat-wasm` — `WasmRveSolver`,
+      `WasmPhaseField` (`step`, `get_order_parameter`), build in
+      `benchmark`/`docs` CI
+- [ ] `tpt-materials` umbrella / facade crate — thin re-export so the
+      spec §6 & §13 snippets (`use tpt_materials::crystallography::…`,
+      `::crystal_plasticity::…`, `::energy_materials::…`) resolve
+  - [ ] One `pub mod` per spec domain, re-exporting the domain crates
+  - [ ] Per-domain cargo features (`crystal-plasticity`, `phase-field`,
+        …); `full` enables all; `wasm` pulls `tpt-mat-wasm`
+  - [ ] Doc-test the exact import snippets from spec §6 and §13
+- [ ] RFC 0008: materials-informatics database schema + ML surrogates
+- [ ] Verification test: end-to-end Hill–Mandel consistency through
+      the full micro→macro pipeline
+- [ ] Example: `examples/micro-to-macro-pipeline` (microstructure →
+      homogenized property → device-level input)
+
+**Milestone:** End-to-end micro-to-macro pipeline (microstructure →
+device property) with at least one live cross-repo consumer.
+
+---
+
+## Phase 9 — Soft Matter & Hydrogen Storage (post-spec addition)
+
+> Not in the spec's §11 phase plan, but spec §5 Domains 7 & 8 and the
+> §4 workspace layout define `tpt-mat-polymer`, `tpt-mat-hydrogel`, and
+> `tpt-mat-hydrogen-storage`.  Collected here so no spec crate is
+> dropped.
+
+**Crates:** `tpt-mat-polymer`, `tpt-mat-hydrogel`, `tpt-mat-hydrogen-storage`
+**Substrate:** `tpt-science` (diffusion, thermodynamics), `tpt-math-prob-dist`
+
+- [ ] `tpt-mat-polymer`
+  - [ ] `ChainModel`: `FreelyJointedChain { num_segments,
+        segment_length }`, `WormLikeChain { persistence_length,
+        contour_length }`, `ArrudaBoyce { n_segments, shear_modulus }`
+  - [ ] `PolymerModel { chain_model, crosslink_density }`
+  - [ ] `stress_strain(stretch) -> f64` (Arruda–Boyce 8-chain via
+        inverse Langevin; WLC force–extension)
+  - [ ] Verification test: Arruda–Boyce → neo-Hookean at small stretch
+- [ ] `tpt-mat-hydrogel`
+  - [ ] Flory–Rehner swelling equilibrium (mixing + elastic osmotic
+        pressure balance)
+  - [ ] Poroelastic swelling kinetics (Fickian solvent uptake on a
+        `tpt-science` grid)
+  - [ ] `equilibrium_swelling_ratio(chi, crosslink_density) -> f64`
+- [ ] `tpt-mat-hydrogen-storage`
+  - [ ] `HydrideType`: `MetalHydride { alloy }`,
+        `ChemicalHydride { compound }`, `PorousMaterial { surface_area }`
+  - [ ] `HydrogenStorageMaterial { hydride_type, storage_capacity_wt_pct,
+        absorption_kinetics }`
+  - [ ] `pct_isotherm(temperature) -> Vec<(f64, f64)>` (pressure–
+        composition–temperature curve with plateau + van 't Hoff
+        temperature dependence)
+- [ ] RFC 0009: soft-matter constitutive models
+- [ ] RFC 0010: hydrogen-storage sorption kinetics
+- [ ] Example: `examples/rubber-elasticity` (Arruda–Boyce uniaxial)
+- [ ] Example: `examples/metal-hydride-pct` (LaNi₅ PCT isotherm family)
+
+**Milestone:** Arruda–Boyce rubber stress–stretch curve and a
+metal-hydride PCT isotherm from a single MIT-clean crate set.
+
+---
+
+## Phase 10 — Advanced Degradation & Multiphysics (post-spec addition)
+
+> Standard micro-scale topics not covered by any spec.txt crate,
+> identified in the 2026-09-03 crate-organisation review.  Each crate
+> notes its home domain group and the existing crate it extends.
+> Item granularity follows the standard model equations (there are no
+> spec.txt API blocks for these).
+
+**Substrate:** `tpt-science` (grids / PDE helpers), `tpt-mat-calphad`,
+`tpt-mat-phase-field`, `tpt-mat-homogenization`, `tpt-mat-hardening`
+
+### `tpt-mat-fracture` — home group: degradation
+
+- [ ] `StressIntensityFactor` — `K_I` / `K_II` / `K_III`, geometry
+      factors (edge / centre / penny-shaped crack),
+      `k_from_load(geometry, stress, crack_length)`
+- [ ] `EnergyReleaseRate` — `G`, Irwin `G = K² / E'`, J-integral
+      (domain-integral form on a `tpt-science` grid)
+- [ ] `CohesiveZoneModel` — bilinear / exponential traction–separation
+      (`t_0`, `δ_c`, `G_c`); mixed-mode Benzeggagh–Kenane
+- [ ] `PhaseFieldFracture` — Griffith / AT1 / AT2 regularised
+      functionals (`κ`, `G_c`, `l_0`); staggered solve reusing the
+      `tpt-mat-phase-field` infrastructure
+- [ ] `fracture_toughness_transition` — DBTT / master-curve
+      (ASTM E1921) helper
+- [ ] Verification test: phase-field fracture recovers the Griffith
+      load for a 1-D bar; `K → G` Irwin consistency
+- [ ] RFC: fracture mechanics (LEFM + CZM + phase-field)
+- [ ] Example: `examples/phase-field-fracture-notch` (single-edge-notch
+      tension)
+
+### `tpt-mat-precipitation` — home group: thermo-kinetics (with `tpt-mat-calphad`)
+
+- [ ] `ClassicalNucleation` — `I = I_0 exp(−ΔG*/kT) exp(−Q/kT)`; `ΔG*`
+      from interfacial energy `γ` and driving force `Δg_v` (driving
+      force from `tpt-mat-calphad`)
+- [ ] `KwnModel` — Kampmann–Wagner–Numerical: discretised size classes,
+      coupled nucleation + growth (`dR/dt`) + capillarity
+- [ ] `LswCoarsening` — `R̄³ − R̄_0³ = K t`, `K` from `γ`, `D`, `c_eq`,
+      `V_m`
+- [ ] `PrecipitateState` — number density, mean radius, volume
+      fraction, matrix supersaturation vs time
+- [ ] `strengthening_increment` — Orowan bypass + shearing → `Δσ_y`,
+      hand-off to `tpt-mat-hardening`
+- [ ] Verification test: KWN conserves solute mass; late-stage slope
+      → LSW `t^{1/3}`
+- [ ] RFC: precipitation kinetics (CNT + KWN + LSW)
+- [ ] Example: `examples/precipitation-age-hardening` (Al–Cu GP-zone
+      → θ′ sweep)
+
+### `tpt-mat-thermal` — home group: micro-mechanics (extends `tpt-mat-homogenization`)
+
+- [ ] `effective_conductivity` — series / parallel / Hashin–Shtrikman /
+      self-consistent / Maxwell–Garnett (2-phase and N-phase)
+- [ ] `effective_cte` — Turner, Kerner, Rosen–Hashin bounds for
+      composite thermal expansion
+- [ ] `effective_specific_heat` — mass-weighted rule of mixtures
+- [ ] `effective_diffusivity` — tortuosity / Bruggeman for porous &
+      multiphase media (shared math with electrical conductivity)
+- [ ] `interface_thermal_resistance` — Kapitza-resistance correction
+- [ ] Generalise the 6×6 / scalar bound machinery in
+      `tpt-mat-homogenization` from stiffness to any
+      symmetric-positive transport tensor
+- [ ] Verification test: conductivity HS bounds enclose the
+      self-consistent estimate and collapse at zero contrast
+- [ ] RFC: effective thermal & transport-property homogenization
+- [ ] Example: `examples/composite-thermal-properties` (SiC/Al `k`,
+      CTE vs `f`)
+
+### `tpt-mat-dislocation` — home group: crystal-plasticity (extends `tpt-mat-hardening`)
+
+- [ ] `DislocationDensityState` — per-slip-system `ρ_SSD`, `ρ_GND`,
+      forest density
+- [ ] `KocksMeckingEvolution` — `dρ/dγ = k_1 √ρ − k_2 ρ` (storage vs
+      dynamic recovery); Taylor stress `τ = α μ b √ρ`
+- [ ] `back_stress` — Armstrong–Frederick kinematic term from GND
+      gradients
+- [ ] `gnd_from_curvature` — Nye tensor → `ρ_GND` from a
+      lattice-curvature field
+- [ ] New `HardeningLaw::DislocationDensity` variant wired into
+      `tpt-mat-hardening` / `tpt-mat-crystal-plasticity`
+- [ ] Verification test: single-slip response reproduces Voce-like
+      saturation; `ρ` stays non-negative
+- [ ] RFC: dislocation-density-based hardening
+- [ ] Example: `examples/dislocation-density-tension` (vs phenomenological
+      Voce)
+
+### `tpt-mat-hydrogen-embrittlement` — home group: degradation (bridges `tpt-mat-diffusion`)
+
+- [ ] `HydrogenTransport` — Fick + trapping: Oriani local equilibrium
+      and McNabb–Foster kinetic trapping (`N_T`, `E_B`, occupancy `θ_T`)
+- [ ] `stress_driven_diffusion` —
+      `∂C/∂t = ∇·(D∇C − D C V_H ∇σ_h / RT)` (hydrostatic-stress uphill
+      flux) on a `tpt-science` grid
+- [ ] `EmbrittlementCriterion` — HEDE critical-lattice-decohesion and
+      HELP local-plasticity indicators; threshold `C_crit(σ_h)`
+- [ ] `susceptibility_index` — from local H concentration + triaxiality
+      field (feeds `tpt-mat-fracture` / `tpt-mat-fatigue-micro`)
+- [ ] Verification test: trapping retards effective diffusivity by
+      `D_eff = D_L / (1 + ∂C_T/∂C_L)`
+- [ ] RFC: hydrogen transport with trapping + embrittlement criteria
+- [ ] Example: `examples/hydrogen-embrittlement-notch` (H accumulation
+      at a notch-tip stress field)
+
+**Milestone:** A phase-field-fracture prediction whose local toughness
+is modulated by a hydrogen-trapping field — two Phase-10 crates coupled
+end-to-end.
 
 ---
 
@@ -287,6 +620,52 @@ crates with library code, unit tests, examples, and RFC 0004.
 - [ ] SemVer releases on 6-week cadence
 - [ ] RFC discussion required for each new constitutive model
 - [ ] 2-approval merge policy maintained
+
+---
+
+## Workspace organisation notes (2026-09-03 review)
+
+- **Flat `crates/` layout is deliberate.**  Deviates from spec §4's
+  nested `crates/<domain>/` tree.  Rationale: common Rust-workspace
+  practice, simpler paths, Cargo is directory-structure-agnostic.  The
+  domain grouping lives in the `todo.md` phases and in the
+  `tpt-materials` facade crate's module tree instead.  Revisit if the
+  crate count passes ~40.
+- **Vendored substrate** (`tpt-math-linalg-fixed`, `tpt-science`) stays
+  in `crates/` but is upstream-substrate, not domain code — candidates
+  to split into their own repos later (spec §3).
+- **`tpt-mat-calphad` is thermodynamics, not diffusion.**  Grouped with
+  the new `tpt-mat-precipitation` + nucleation code as a "thermo-kinetics"
+  cluster in the phase narrative, even though Phase 4 shipped it.
+- **`tpt-mat-creep`, `tpt-mat-fatigue` (classical), `tpt-mat-damage`
+  (CDM)** are repo additions beyond spec §5 — they belong to the
+  degradation group alongside the spec's `tpt-mat-fatigue-micro` and
+  GTN `tpt-mat-damage`.
+
+### Backlog / candidate modules (in scope, lower priority — likely modules not crates)
+
+- [ ] High-temperature **oxidation** (Wagner parabolic scale growth,
+      breakaway) — module in `tpt-mat-corrosion`; rename that group
+      "environmental degradation"
+- [ ] **Interfaces / grain boundaries** — GB energy, GB character
+      distribution, Langmuir–McLean segregation, triple junctions
+      (consolidate the scattered `GrainBoundaryMobility` /
+      `GrainBoundaryDiffusion`)
+- [ ] **Recrystallization** (static + dynamic) — JMAK-for-RX,
+      Zener–Hollomon, nucleation criteria; distinct from
+      `tpt-mat-grain-growth`'s curvature-driven model
+- [ ] **Stereology / microstructure quantification** — ASTM E112 grain
+      size, phase fraction from 2D/3D image data
+- [ ] **Inverse / calibration** — fit constitutive parameters to
+      experimental curves via `tpt-math-optimize-general` (spec §3)
+
+### Explicitly out of scope (decision recorded)
+
+Molecular dynamics / kinetic Monte Carlo / DFT / cluster expansion
+(spec §8 avoids the GPL atomistics stack); wear / tribology;
+piezo / ferro / thermoelectric micro-mechanics; radiation / neutron
+damage.  Not aligned with the stated target industries (energy storage,
+transport, electronics-solder, medical implants).
 
 ---
 

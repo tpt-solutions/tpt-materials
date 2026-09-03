@@ -20,4 +20,4 @@ workspace = true
 serde = { workspace = true }
 
 [dev-dependencies]
-approx = { workspace = true }
+tpt-testkit = { workspace = true }

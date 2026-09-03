@@ -156,7 +156,7 @@ impl Mul<f64> for SymMat3 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use approx::assert_relative_eq;
+    use tpt_testkit::assert_relative_eq;
 
     #[test]
     fn double_dot_equals_trace_of_product() {

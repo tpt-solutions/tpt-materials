@@ -70,7 +70,7 @@ pub fn lemaitre_damage_step(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use approx::assert_relative_eq;
+    use tpt_testkit::assert_relative_eq;
 
     #[test]
     fn damage_rate_is_infinite_at_rupture() {

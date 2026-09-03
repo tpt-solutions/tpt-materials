@@ -52,7 +52,7 @@ impl PhysicalConstants {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use approx::assert_relative_eq;
+    use tpt_testkit::assert_relative_eq;
 
     #[test]
     fn gas_constant_equals_avogadro_times_boltzmann() {

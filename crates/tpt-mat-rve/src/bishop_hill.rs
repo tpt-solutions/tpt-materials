@@ -584,7 +584,7 @@ pub fn voigt_to_nu(nu: f64) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use approx::assert_relative_eq;
+    use tpt_testkit::assert_relative_eq;
 
     #[test]
     fn bishop_hill_fcc_random_gives_lower_bound() {

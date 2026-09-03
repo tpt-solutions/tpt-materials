@@ -123,7 +123,7 @@ pub fn resolved_shear_stresses(sigma: Vec6, slip_systems: &[SlipSystem]) -> Vec<
 #[cfg(test)]
 mod tests {
     use super::*;
-    use approx::assert_relative_eq;
+    use tpt_testkit::assert_relative_eq;
     use tpt_mat_crystallography::CrystalStructure;
 
     #[test]

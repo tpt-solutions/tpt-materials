@@ -76,7 +76,7 @@ pub fn rupture_time_theta(params: &ThetaProjectionParams) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use approx::assert_relative_eq;
+    use tpt_testkit::assert_relative_eq;
 
     #[test]
     fn creep_strain_at_zero_time_is_zero() {

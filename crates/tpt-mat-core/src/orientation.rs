@@ -420,7 +420,7 @@ impl CrystalOrientation {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use approx::assert_relative_eq;
+    use tpt_testkit::assert_relative_eq;
 
     #[test]
     fn identity_is_rotation_matrix() {

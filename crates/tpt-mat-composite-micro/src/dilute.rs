@@ -78,7 +78,7 @@ pub fn dilute_response_stress(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use approx::assert_relative_eq;
+    use tpt_testkit::assert_relative_eq;
 
     #[test]
     fn dilute_recovers_matrix_for_zero_inclusion() {
