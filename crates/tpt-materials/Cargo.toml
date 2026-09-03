@@ -34,9 +34,23 @@ full = [
     "composite-micro",
     "damage",
     "fatigue",
+    "fatigue-micro",
+    "corrosion",
     "creep",
     "heat-treatment",
+    "welding",
+    "battery",
+    "additive",
     "database",
+    "machine-learning",
+    "fracture",
+    "thermal",
+    "dislocation",
+    "precipitation",
+    "hydrogen-embrittlement",
+    "polymer",
+    "hydrogel",
+    "hydrogen-storage",
     "wasm",
 ]
 
@@ -55,9 +69,23 @@ rve = ["tpt-mat-rve"]
 composite-micro = ["tpt-mat-composite-micro"]
 damage = ["tpt-mat-damage"]
 fatigue = ["tpt-mat-fatigue"]
+fatigue-micro = ["tpt-mat-fatigue-micro"]
+corrosion = ["tpt-mat-corrosion"]
 creep = ["tpt-mat-creep"]
 heat-treatment = ["tpt-mat-heat-treatment"]
+welding = ["tpt-mat-welding"]
+battery = ["tpt-mat-battery"]
+additive = ["tpt-mat-additive"]
 database = ["tpt-mat-database"]
+machine-learning = ["tpt-mat-machine-learning"]
+fracture = ["tpt-mat-fracture"]
+thermal = ["tpt-mat-thermal"]
+dislocation = ["tpt-mat-dislocation"]
+precipitation = ["tpt-mat-precipitation"]
+hydrogen-embrittlement = ["tpt-mat-hydrogen-embrittlement"]
+polymer = ["tpt-mat-polymer"]
+hydrogel = ["tpt-mat-hydrogel"]
+hydrogen-storage = ["tpt-mat-hydrogen-storage"]
 wasm = ["tpt-mat-wasm"]
 
 [dependencies.tpt-mat-crystallography]
@@ -135,6 +163,16 @@ path = "../tpt-mat-fatigue"
 version = "0.1"
 optional = true
 
+[dependencies.tpt-mat-fatigue-micro]
+path = "../tpt-mat-fatigue-micro"
+version = "0.1"
+optional = true
+
+[dependencies.tpt-mat-corrosion]
+path = "../tpt-mat-corrosion"
+version = "0.1"
+optional = true
+
 [dependencies.tpt-mat-creep]
 path = "../tpt-mat-creep"
 version = "0.1"
@@ -145,8 +183,68 @@ path = "../tpt-mat-heat-treatment"
 version = "0.1"
 optional = true
 
+[dependencies.tpt-mat-welding]
+path = "../tpt-mat-welding"
+version = "0.1"
+optional = true
+
+[dependencies.tpt-mat-battery]
+path = "../tpt-mat-battery"
+version = "0.1"
+optional = true
+
+[dependencies.tpt-mat-additive]
+path = "../tpt-mat-additive"
+version = "0.1"
+optional = true
+
 [dependencies.tpt-mat-database]
 path = "../tpt-mat-database"
+version = "0.1"
+optional = true
+
+[dependencies.tpt-mat-machine-learning]
+path = "../tpt-mat-machine-learning"
+version = "0.1"
+optional = true
+
+[dependencies.tpt-mat-fracture]
+path = "../tpt-mat-fracture"
+version = "0.1"
+optional = true
+
+[dependencies.tpt-mat-thermal]
+path = "../tpt-mat-thermal"
+version = "0.1"
+optional = true
+
+[dependencies.tpt-mat-dislocation]
+path = "../tpt-mat-dislocation"
+version = "0.1"
+optional = true
+
+[dependencies.tpt-mat-precipitation]
+path = "../tpt-mat-precipitation"
+version = "0.1"
+optional = true
+
+[dependencies.tpt-mat-hydrogen-embrittlement]
+path = "../tpt-mat-hydrogen-embrittlement"
+version = "0.1"
+optional = true
+
+[dependencies.tpt-mat-polymer]
+path = "../tpt-mat-polymer"
+version = "0.1"
+optional = true
+
+[dependencies.tpt-mat-hydrogel]
+path = "../tpt-mat-hydrogel"
+version = "0.1"
+optional = true
+
+[dependencies.tpt-mat-hydrogen-storage]
+path = "../tpt-mat-hydrogen-storage"
 version = "0.1"
 optional = true
 

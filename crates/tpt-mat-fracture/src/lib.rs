@@ -48,19 +48,12 @@ mod phase_field;
 mod sif;
 mod transition;
 
-pub use cohesive::{
-    CohesiveZoneModel, MixedModeDecomposition, TractionSeparation,
-};
+pub use cohesive::{CohesiveZoneModel, MixedModeDecomposition, TractionSeparation};
 pub use energy_release_rate::{
     energy_release_rate_irwin, energy_release_rate_j_integral, IrwinModulus,
 };
-pub use phase_field::{
-    at1_degradation, at2_degradation, dissipation_density, PhaseFieldFracture,
-};
+pub use phase_field::{at1_degradation, at2_degradation, dissipation_density, PhaseFieldFracture};
 pub use sif::{
-    k_i_centre_crack, k_i_edge_crack, k_ii_centre_crack, k_iii_centre_crack,
-    StressIntensityFactor,
+    k_i_centre_crack, k_i_edge_crack, k_ii_centre_crack, k_iii_centre_crack, StressIntensityFactor,
 };
-pub use transition::{
-    fracture_toughness_transition, master_curve_k_jc, MasterCurveParams,
-};
+pub use transition::{fracture_toughness_transition, master_curve_k_jc, MasterCurveParams};

@@ -1,0 +1,22 @@
+[package]
+name = "phase-field-fracture-notch"
+description = "Example: single-edge-notch tension phase-field fracture simulation"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+authors.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+tpt-mat-fracture = { path = "../../crates/tpt-mat-fracture", version = "0.1" }
+tpt-science = { path = "../../crates/tpt-science", version = "0.1" }

@@ -83,22 +83,16 @@ impl PropertyQuery {
         match self.property {
             Property::YoungsModulusGPa => record.mechanical.youngs_modulus_gpa,
             Property::YieldStrengthMPa => record.mechanical.yield_strength_mpa,
-            Property::UltimateTensileStrengthMPa => {
-                record.mechanical.ultimate_tensile_strength_mpa
-            }
+            Property::UltimateTensileStrengthMPa => record.mechanical.ultimate_tensile_strength_mpa,
             Property::DensityKgPerM3 => record.mechanical.density_kg_per_m3,
             Property::PoissonsRatio => record.mechanical.poissons_ratio,
-            Property::ThermalConductivityWPerMK => {
-                record.thermal.thermal_conductivity_w_per_mk
-            }
+            Property::ThermalConductivityWPerMK => record.thermal.thermal_conductivity_w_per_mk,
             Property::SpecificHeatJPerKgK => record.thermal.specific_heat_j_per_kgk,
             Property::CoefficientThermalExpansionPerK => {
                 record.thermal.coefficient_thermal_expansion_per_k
             }
             Property::MeltingPointK => record.thermal.melting_point_k,
-            Property::ElectricalResistivityOhmM => {
-                record.electrical.electrical_resistivity_ohm_m
-            }
+            Property::ElectricalResistivityOhmM => record.electrical.electrical_resistivity_ohm_m,
         }
     }
 }

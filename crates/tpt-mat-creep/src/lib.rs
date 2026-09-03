@@ -54,19 +54,10 @@ mod norton;
 mod sherby_dorn;
 mod theta_projection;
 
-pub use larson_miller::{
-    larson_miller_parameter, rupture_time_from_lmp, LarsonMillerParams,
-};
-pub use monkman_grant::{
-    monkman_grant_product, rupture_time_monkman_grant, MonkmanGrantParams,
-};
-pub use norton::{
-    norton_creep_rate, rupture_time_norton, NortonBaileyParams,
-};
-pub use sherby_dorn::{
-    rupture_time_from_dorn, sherby_dorn_parameter, SherbyDornParams,
-};
+pub use larson_miller::{larson_miller_parameter, rupture_time_from_lmp, LarsonMillerParams};
+pub use monkman_grant::{monkman_grant_product, rupture_time_monkman_grant, MonkmanGrantParams};
+pub use norton::{norton_creep_rate, rupture_time_norton, NortonBaileyParams};
+pub use sherby_dorn::{rupture_time_from_dorn, sherby_dorn_parameter, SherbyDornParams};
 pub use theta_projection::{
-    theta_projection_creep_rate, theta_projection_creep_strain,
-    ThetaProjectionParams,
+    theta_projection_creep_rate, theta_projection_creep_strain, ThetaProjectionParams,
 };

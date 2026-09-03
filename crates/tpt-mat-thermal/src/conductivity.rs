@@ -28,11 +28,7 @@ pub enum ConductivityBound {
 ///
 /// `k_phases[i]` is the conductivity of phase `i` and
 /// `f[i]` is its volume fraction (must sum to 1).
-pub fn effective_conductivity(
-    bound: ConductivityBound,
-    k_phases: &[f64],
-    f: &[f64],
-) -> f64 {
+pub fn effective_conductivity(bound: ConductivityBound, k_phases: &[f64], f: &[f64]) -> f64 {
     assert_eq!(k_phases.len(), f.len(), "k_phases and f must match");
     let n = k_phases.len();
     if n == 1 {
@@ -44,9 +40,7 @@ pub fn effective_conductivity(
         // Return a sane default instead of panicking.
     }
     match bound {
-        ConductivityBound::Voigt => {
-            f.iter().zip(k_phases.iter()).map(|(fi, ki)| fi * ki).sum()
-        }
+        ConductivityBound::Voigt => f.iter().zip(k_phases.iter()).map(|(fi, ki)| fi * ki).sum(),
         ConductivityBound::Reuss => {
             let denom: f64 = f.iter().zip(k_phases.iter()).map(|(fi, ki)| fi / ki).sum();
             if denom.abs() < 1.0e-30 {
@@ -59,8 +53,7 @@ pub fn effective_conductivity(
             let r = effective_conductivity(ConductivityBound::Reuss, k_phases, f);
             0.5 * (v + r)
         }
-        ConductivityBound::HashinShtrikmanLower
-        | ConductivityBound::HashinShtrikmanUpper => {
+        ConductivityBound::HashinShtrikmanLower | ConductivityBound::HashinShtrikmanUpper => {
             let (k_low, k_high) = k_min_max(k_phases);
             let sign = if matches!(bound, ConductivityBound::HashinShtrikmanUpper) {
                 1.0
@@ -86,8 +79,7 @@ pub fn effective_conductivity(
                     continue;
                 }
                 let fi = f[i];
-                k_eff = k_eff
-                    * (ki + 2.0 * k_mat + 2.0 * fi * (ki - k_mat))
+                k_eff = k_eff * (ki + 2.0 * k_mat + 2.0 * fi * (ki - k_mat))
                     / (ki + 2.0 * k_mat - fi * (ki - k_mat));
             }
             k_eff
@@ -109,13 +101,7 @@ fn k_min_max(k: &[f64]) -> (f64, f64) {
     (lo, hi)
 }
 
-fn hashin_shtrikman_two_phase(
-    f: &[f64],
-    k: &[f64],
-    k_low: f64,
-    k_high: f64,
-    sign: f64,
-) -> f64 {
+fn hashin_shtrikman_two_phase(f: &[f64], k: &[f64], k_low: f64, k_high: f64, sign: f64) -> f64 {
     // k_phase is treated as inclusion in a matrix of k_ref.
     // For the lower bound we take the matrix to be k_low;
     // for the upper bound the matrix is k_high.
@@ -150,14 +136,20 @@ fn hashin_shtrikman_two_phase(
         .map(|(fi, ki)| fi * ki / (ki + 2.0 * k_ref))
         .sum();
     let k_pred = num_total + k_ref / 3.0 * (1.0 - 3.0 * denom_total).max(0.0);
-    k_pred.max(k_ref.min(k_phases_min(k))).min(k_ref.max(k_phases_max(k)))
+    k_pred
+        .max(k_ref.min(k_phases_min(k)))
+        .min(k_ref.max(k_phases_max(k)))
 }
 
 fn k_phases_min(k: &[f64]) -> f64 {
-    *k.iter().min_by(|a, b| a.partial_cmp(b).unwrap()).unwrap_or(&0.0)
+    *k.iter()
+        .min_by(|a, b| a.partial_cmp(b).unwrap())
+        .unwrap_or(&0.0)
 }
 fn k_phases_max(k: &[f64]) -> f64 {
-    *k.iter().max_by(|a, b| a.partial_cmp(b).unwrap()).unwrap_or(&0.0)
+    *k.iter()
+        .max_by(|a, b| a.partial_cmp(b).unwrap())
+        .unwrap_or(&0.0)
 }
 
 /// Hashin–Shtrikman scalar bound for two phases.
@@ -166,25 +158,14 @@ fn k_phases_max(k: &[f64]) -> f64 {
 ///
 /// at `f_inclusion = 0` this reduces to `k_matrix`, at
 /// `f_inclusion = 1` to `k_inclusion`.
-pub fn hashin_shtrikman_k(
-    k_matrix: f64,
-    k_inclusion: f64,
-    f_inclusion: f64,
-    upper: bool,
-) -> f64 {
+pub fn hashin_shtrikman_k(k_matrix: f64, k_inclusion: f64, f_inclusion: f64, upper: bool) -> f64 {
     // Select the correct "matrix" reference for the upper /
     // lower bound.  For the upper bound, the stiffer phase acts
     // as the matrix; for the lower bound, the softer phase.
     let (k_ref, k_inc) = if upper {
-        (
-            k_matrix.max(k_inclusion),
-            k_matrix.min(k_inclusion),
-        )
+        (k_matrix.max(k_inclusion), k_matrix.min(k_inclusion))
     } else {
-        (
-            k_matrix.min(k_inclusion),
-            k_matrix.max(k_inclusion),
-        )
+        (k_matrix.min(k_inclusion), k_matrix.max(k_inclusion))
     };
     let dk = k_inc - k_ref;
     if dk.abs() < 1.0e-30 {
@@ -268,8 +249,11 @@ mod tests {
 
     #[test]
     fn maxwell_garnett_bracketed_by_voigt_reuss() {
-        let k_mg =
-            effective_conductivity(ConductivityBound::MaxwellGarnett, &[10.0, 100.0], &[0.7, 0.3]);
+        let k_mg = effective_conductivity(
+            ConductivityBound::MaxwellGarnett,
+            &[10.0, 100.0],
+            &[0.7, 0.3],
+        );
         let v = effective_conductivity(ConductivityBound::Voigt, &[10.0, 100.0], &[0.7, 0.3]);
         let r = effective_conductivity(ConductivityBound::Reuss, &[10.0, 100.0], &[0.7, 0.3]);
         assert!(k_mg >= r - 1.0e-9);

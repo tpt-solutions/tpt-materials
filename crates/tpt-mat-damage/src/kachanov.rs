@@ -79,7 +79,11 @@ mod tests {
 
     #[test]
     fn rupture_time_matches_closed_form() {
-        let p = KachanovParams { a: 1.0e-6, n: 3.0, k: 2.0 };
+        let p = KachanovParams {
+            a: 1.0e-6,
+            n: 3.0,
+            k: 2.0,
+        };
         let t_r = kachanov_rupture_time(&p, 100.0);
         let expected = (1.0 + 2.0) / (1.0e-6 * 100.0_f64.powf(3.0));
         assert_relative_eq!(t_r, expected, max_relative = 1e-9);

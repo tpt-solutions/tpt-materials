@@ -1,0 +1,21 @@
+[package]
+name = "welding-haz"
+description = "Example: GMAW weld on AISI 4140 steel — HAZ width, peak-temperature profile, grain-coarsening and phase-fraction prediction"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+authors.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+tpt-mat-welding = { path = "../../crates/tpt-mat-welding", version = "0.1" }

@@ -41,8 +41,7 @@ impl CohesiveZoneModel {
             self.peak_traction * (delta / (0.5 * self.critical_separation))
         } else {
             self.peak_traction
-                * ((self.critical_separation - delta)
-                    / (0.5 * self.critical_separation))
+                * ((self.critical_separation - delta) / (0.5 * self.critical_separation))
         }
     }
 }

@@ -26,12 +26,7 @@ pub fn effective_diffusivity(porosity: f64, d_matrix: f64, tortuosity: f64) -> f
 /// Solve the Bruggeman implicit relation for `D_eff` via bisection.
 ///
 /// `n` is the dimensionality (commonly 3).
-pub fn bruggeman_diffusivity(
-    porosity: f64,
-    d_matrix: f64,
-    d_inclusion: f64,
-    n: f64,
-) -> f64 {
+pub fn bruggeman_diffusivity(porosity: f64, d_matrix: f64, d_inclusion: f64, n: f64) -> f64 {
     let f = porosity;
     let mut lo = d_matrix.min(d_inclusion);
     let mut hi = d_matrix.max(d_inclusion);
@@ -58,7 +53,11 @@ mod tests {
 
     #[test]
     fn effective_diffusivity_zero_at_zero_porosity() {
-        assert!(approx(effective_diffusivity(0.0, 1.0e-9, 1.5), 0.0, 1.0e-30));
+        assert!(approx(
+            effective_diffusivity(0.0, 1.0e-9, 1.5),
+            0.0,
+            1.0e-30
+        ));
     }
 
     #[test]

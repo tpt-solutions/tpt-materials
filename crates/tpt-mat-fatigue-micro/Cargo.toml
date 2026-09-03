@@ -1,0 +1,27 @@
+[package]
+name = "tpt-mat-fatigue-micro"
+description = "Microstructural (RVE-based) fatigue: Findley, Fatemi-Socie, Smith-Watson-Topper and CrystallographicSlip fatigue-indicator parameters driving crack-initiation prediction from CP-FEM RVE results"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+authors.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+serde = { workspace = true }
+thiserror = { workspace = true }
+tpt-math-linalg-fixed = { path = "../tpt-math-linalg-fixed", version = "0.1" }
+tpt-mat-crystal-plasticity = { path = "../tpt-mat-crystal-plasticity", version = "0.1" }
+tpt-mat-rve = { path = "../tpt-mat-rve", version = "0.1" }
+
+[dev-dependencies]
+tpt-testkit = { workspace = true }

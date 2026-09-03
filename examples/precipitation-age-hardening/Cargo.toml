@@ -1,0 +1,21 @@
+[package]
+name = "precipitation-age-hardening"
+description = "Example: Al-Cu age-hardening curve using KWN size-class solver + Orowan strengthening"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+authors.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+tpt-mat-precipitation = { path = "../../crates/tpt-mat-precipitation", version = "0.1" }

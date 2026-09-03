@@ -51,14 +51,8 @@ mod strain_life;
 mod walker;
 
 pub use basquin::{cycles_to_failure_basquin, fatigue_strength_at, BasquinParams};
-pub use coffin_manson::{
-    cycles_to_failure_coffin_manson, plastic_strain_at, CoffinMansonParams,
-};
-pub use paris::{
-    crack_growth_rate, critical_crack_length, paris_lifetime, ParisParams,
-};
-pub use rainflow::{
-    rainflow_count, rainflow_count_from_pairs, Cycle, RainflowResult,
-};
+pub use coffin_manson::{cycles_to_failure_coffin_manson, plastic_strain_at, CoffinMansonParams};
+pub use paris::{crack_growth_rate, critical_crack_length, paris_lifetime, ParisParams};
+pub use rainflow::{rainflow_count, rainflow_count_from_pairs, Cycle, RainflowResult};
 pub use strain_life::{cycles_to_failure_strain_life, StrainLifeParams};
 pub use walker::{equivalent_amplitude_walker, walker_gamma};

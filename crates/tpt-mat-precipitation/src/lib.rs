@@ -23,6 +23,6 @@ pub use cnt::{classical_nucleation_rate, critical_radius, nucleation_barrier};
 pub use kwn::{kwn_step, KwnParams, KwnState};
 pub use lsw::{lsw_coarsening_rate, lsw_radius_cubed_growth};
 pub use strengthening::{
-    orowan_bypass_strengthening, shearing_strengthening,
-    StrengtheningIncrement, StrengtheningMechanism,
+    orowan_bypass_strengthening, shearing_strengthening, StrengtheningIncrement,
+    StrengtheningMechanism,
 };

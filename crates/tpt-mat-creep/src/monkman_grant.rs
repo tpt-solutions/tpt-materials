@@ -20,10 +20,7 @@ pub struct MonkmanGrantParams {
 
 impl Default for MonkmanGrantParams {
     fn default() -> Self {
-        Self {
-            c_mg: 0.05,
-            m: 0.9,
-        }
+        Self { c_mg: 0.05, m: 0.9 }
     }
 }
 

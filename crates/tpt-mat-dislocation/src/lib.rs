@@ -20,8 +20,6 @@ mod nye;
 mod state;
 
 pub use back_stress::{armstrong_frederick_step, BackStressParams};
-pub use kocks_mecking::{
-    kocks_mecking_step, taylor_stress, KocksMeckingParams,
-};
+pub use kocks_mecking::{kocks_mecking_step, taylor_stress, KocksMeckingParams};
 pub use nye::gnd_from_curvature;
 pub use state::DislocationDensityState;

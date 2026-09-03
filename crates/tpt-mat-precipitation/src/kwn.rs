@@ -78,11 +78,7 @@ impl KwnState {
     /// unit volume fraction per particle `= (4/3) π R³`).
     pub fn volume_fraction(&self, params: &KwnParams) -> f64 {
         let mut vf = 0.0;
-        for (n, r) in self
-            .number_densities
-            .iter()
-            .zip(params.class_radii.iter())
-        {
+        for (n, r) in self.number_densities.iter().zip(params.class_radii.iter()) {
             vf += n * (4.0 / 3.0) * core::f64::consts::PI * r.powi(3);
         }
         vf
@@ -91,12 +87,7 @@ impl KwnState {
 
 /// One explicit KWN time step.  `nucleation_flux` (m⁻³·s⁻¹)
 /// seeds the smallest class.
-pub fn kwn_step(
-    state: &KwnState,
-    dt: f64,
-    params: &KwnParams,
-    nucleation_flux: f64,
-) -> KwnState {
+pub fn kwn_step(state: &KwnState, dt: f64, params: &KwnParams, nucleation_flux: f64) -> KwnState {
     let n_classes = params.class_radii.len();
     if n_classes < 2 {
         return state.clone();

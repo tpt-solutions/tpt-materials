@@ -40,11 +40,7 @@ impl Default for NortonBaileyParams {
 
 /// Steady-state creep rate `ε̇_ss` at stress `σ` (MPa) and
 /// temperature `T` (K).  Returns `0` for `σ ≤ 0` or `T ≤ 0`.
-pub fn norton_creep_rate(
-    params: &NortonBaileyParams,
-    sigma: f64,
-    t_kelvin: f64,
-) -> f64 {
+pub fn norton_creep_rate(params: &NortonBaileyParams, sigma: f64, t_kelvin: f64) -> f64 {
     if sigma <= 0.0 || t_kelvin <= 0.0 {
         return 0.0;
     }

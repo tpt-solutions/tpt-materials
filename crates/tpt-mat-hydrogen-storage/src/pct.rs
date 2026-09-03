@@ -57,9 +57,16 @@ pub fn pct_isotherm(p: &PctParams, t_k: f64, n_points: usize) -> Vec<PctPoint> {
         // lower branch (H/M < 0.5 H/M_max): P = P0 + m_low * (H/M - 0.5 H/M_max)
         // upper branch (H/M > 0.5 H/M_max): P = P0 + m_up * (H/M - 0.5 H/M_max)
         let mid = 0.5 * p.h_to_m_max;
-        let slope = if h_to_m < mid { p.slope_low } else { p.slope_up };
+        let slope = if h_to_m < mid {
+            p.slope_low
+        } else {
+            p.slope_up
+        };
         let pressure = (p0 + slope * (h_to_m - mid)).max(1.0);
-        pts.push(PctPoint { h_to_m, pressure_pa: pressure });
+        pts.push(PctPoint {
+            h_to_m,
+            pressure_pa: pressure,
+        });
     }
     pts
 }

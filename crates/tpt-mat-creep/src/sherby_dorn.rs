@@ -29,11 +29,7 @@ impl Default for SherbyDornParams {
 
 /// Compute the Dorn parameter `θ_D = t_r · exp(-Q / (R T))`.
 /// Returns `0` for `t_r ≤ 0` or `T ≤ 0`.
-pub fn sherby_dorn_parameter(
-    params: &SherbyDornParams,
-    t_r: f64,
-    t_kelvin: f64,
-) -> f64 {
+pub fn sherby_dorn_parameter(params: &SherbyDornParams, t_r: f64, t_kelvin: f64) -> f64 {
     if t_r <= 0.0 || t_kelvin <= 0.0 {
         return 0.0;
     }
@@ -42,11 +38,7 @@ pub fn sherby_dorn_parameter(
 }
 
 /// Inverse: rupture time `t_r = θ_D · exp(Q / (R T))`.
-pub fn rupture_time_from_dorn(
-    params: &SherbyDornParams,
-    theta_d: f64,
-    t_kelvin: f64,
-) -> f64 {
+pub fn rupture_time_from_dorn(params: &SherbyDornParams, theta_d: f64, t_kelvin: f64) -> f64 {
     if theta_d <= 0.0 || t_kelvin <= 0.0 {
         return f64::INFINITY;
     }

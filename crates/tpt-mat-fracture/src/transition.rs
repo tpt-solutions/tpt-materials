@@ -32,11 +32,11 @@ pub fn fracture_toughness_transition(p: &MasterCurveParams) -> f64 {
     // So T_DBTT ≈ T_0.  Allow a tiny offset for the Weibull-driven
     // lower-bound transition.
     #[allow(clippy::eq_op)]
-        let offset = {
-            let numerator: f64 = 100.0 - 30.0;
-            let denominator: f64 = 70.0;
-            (numerator / denominator).ln() / 0.019
-        };
+    let offset = {
+        let numerator: f64 = 100.0 - 30.0;
+        let denominator: f64 = 70.0;
+        (numerator / denominator).ln() / 0.019
+    };
     p.t0_k + offset
 }
 

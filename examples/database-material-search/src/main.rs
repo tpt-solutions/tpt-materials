@@ -4,10 +4,7 @@ use tpt_mat_database::{MaterialsDatabase, Property, PropertyQuery};
 
 fn main() {
     let db = MaterialsDatabase::load_builtin();
-    println!(
-        "Loaded {} bundled materials; first 3 names:",
-        db.len()
-    );
+    println!("Loaded {} bundled materials; first 3 names:", db.len());
     for m in db.materials.iter().take(3) {
         println!("  - {}", m.name);
     }
@@ -31,9 +28,7 @@ fn main() {
     for h in db.search_by_property(q) {
         println!(
             "  {:<30} k = {:>6.2} W/(m·K)   T_m = {:>5.0} K",
-            h.name,
-            h.thermal.thermal_conductivity_w_per_mk,
-            h.thermal.melting_point_k
+            h.name, h.thermal.thermal_conductivity_w_per_mk, h.thermal.melting_point_k
         );
     }
 }

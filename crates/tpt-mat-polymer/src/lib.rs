@@ -13,9 +13,7 @@ mod fjc;
 mod fjc_chain;
 mod wlc;
 
-pub use arruda_boyce::{
-    arruda_boyce_nominal_stress, arruda_boyce_true_stress,
-};
+pub use arruda_boyce::{arruda_boyce_nominal_stress, arruda_boyce_true_stress};
 pub use chain::{ChainModel, PolymerModel};
 pub use fjc::{inverse_langevin_approx, inverse_langevin_exact};
 pub use fjc_chain::fjc_force_extension;
@@ -28,9 +26,10 @@ pub fn stress_strain(model: &PolymerModel, stretch: f64) -> f64 {
         return 0.0;
     }
     match &model.chain {
-        ChainModel::ArrudaBoyce { n_segments, shear_modulus } => {
-            arruda_boyce_true_stress(*n_segments, *shear_modulus, stretch)
-        }
+        ChainModel::ArrudaBoyce {
+            n_segments,
+            shear_modulus,
+        } => arruda_boyce_true_stress(*n_segments, *shear_modulus, stretch),
         ChainModel::WormLikeChain {
             persistence_length,
             contour_length,

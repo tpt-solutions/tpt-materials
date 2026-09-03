@@ -1,9 +1,7 @@
 //! Bundled MIT-clean materials data set.
 
 use super::provenance::DataSource;
-use super::record::{
-    Composition, Electrical, Mechanical, MaterialRecord, Thermal,
-};
+use super::record::{Composition, Electrical, MaterialRecord, Mechanical, Thermal};
 
 /// Build the bundled material records.
 ///

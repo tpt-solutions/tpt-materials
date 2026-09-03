@@ -35,8 +35,7 @@ pub fn flory_rehner_swelling_ratio(params: &FloryRehnerParams) -> f64 {
     let mut lo = prev_phi;
     let mut hi = 0.999;
     for i in 1..=n_scan {
-        let phi = prev_phi
-            + (0.999 - 1.0e-6) * (i as f64) / (n_scan as f64);
+        let phi = prev_phi + (0.999 - 1.0e-6) * (i as f64) / (n_scan as f64);
         let lhs = lhs_flory_rehner(phi, params);
         if prev_lhs * lhs < 0.0 {
             lo = prev_phi;

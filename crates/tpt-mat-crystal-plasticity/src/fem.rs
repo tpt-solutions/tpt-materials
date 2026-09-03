@@ -286,10 +286,10 @@ pub fn solve_increment_single_point(
 mod tests {
     use super::*;
     use crate::elastic::SymmetricFourthOrder;
-    use tpt_testkit::assert_relative_eq;
     use tpt_mat_crystallography::CrystalStructure;
     use tpt_mat_hardening::{Hardening, VoceHardening, VoceParams};
     use tpt_math_linalg_fixed::SymMat3;
+    use tpt_testkit::assert_relative_eq;
 
     fn fcc_model() -> CrystalPlasticityModel {
         CrystalPlasticityModel::from_crystal_structure(

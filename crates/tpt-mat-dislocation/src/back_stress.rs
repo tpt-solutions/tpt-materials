@@ -22,8 +22,7 @@ pub fn armstrong_frederick_step(
     delta_eps_p: f64,
     params: &BackStressParams,
 ) -> f64 {
-    back_stress + params.c_modulus * delta_eps_p
-        - params.gamma * back_stress * delta_eps_p.abs()
+    back_stress + params.c_modulus * delta_eps_p - params.gamma * back_stress * delta_eps_p.abs()
 }
 
 #[cfg(test)]

@@ -15,7 +15,11 @@ pub fn effective_specific_heat(cp_phases: &[f64], densities: &[f64], f: &[f64]) 
         .zip(cp_phases.iter().zip(densities.iter()))
         .map(|(fi, (cp_i, rho_i))| fi * cp_i * rho_i)
         .sum();
-    let denom: f64 = f.iter().zip(densities.iter()).map(|(fi, rho_i)| fi * rho_i).sum();
+    let denom: f64 = f
+        .iter()
+        .zip(densities.iter())
+        .map(|(fi, rho_i)| fi * rho_i)
+        .sum();
     if denom.abs() < 1.0e-30 {
         return 0.0;
     }

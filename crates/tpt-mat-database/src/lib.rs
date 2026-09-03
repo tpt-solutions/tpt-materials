@@ -19,10 +19,8 @@ mod query;
 mod record;
 
 pub use provenance::DataSource;
-pub use query::{PropertyQuery, Property};
-pub use record::{
-    Composition, Electrical, Mechanical, MaterialRecord, Thermal,
-};
+pub use query::{Property, PropertyQuery};
+pub use record::{Composition, Electrical, MaterialRecord, Mechanical, Thermal};
 
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -72,18 +70,12 @@ impl MaterialsDatabase {
 
     /// All materials whose `name` exactly matches.
     pub fn search_by_name(&self, name: &str) -> Vec<&MaterialRecord> {
-        self.materials
-            .iter()
-            .filter(|m| m.name == name)
-            .collect()
+        self.materials.iter().filter(|m| m.name == name).collect()
     }
 
     /// All materials matching a property-range query.
     pub fn search_by_property(&self, q: PropertyQuery) -> Vec<&MaterialRecord> {
-        self.materials
-            .iter()
-            .filter(|m| q.matches(m))
-            .collect()
+        self.materials.iter().filter(|m| q.matches(m)).collect()
     }
 
     /// Parse from JSON (the format used by `to_json`).

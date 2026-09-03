@@ -27,11 +27,7 @@ impl Default for LarsonMillerParams {
 /// Compute the Larson–Miller parameter `LMP = T (log t_r + C_LM)`
 /// from a rupture time `t_r` in *hours* (the historical unit) and
 /// temperature `T` (K).  Returns `0` for `t_r ≤ 0` or `T ≤ 0`.
-pub fn larson_miller_parameter(
-    params: &LarsonMillerParams,
-    t_hours: f64,
-    t_kelvin: f64,
-) -> f64 {
+pub fn larson_miller_parameter(params: &LarsonMillerParams, t_hours: f64, t_kelvin: f64) -> f64 {
     if t_hours <= 0.0 || t_kelvin <= 0.0 {
         return 0.0;
     }
@@ -39,11 +35,7 @@ pub fn larson_miller_parameter(
 }
 
 /// Inverse: rupture time `t_r` from LMP and temperature.
-pub fn rupture_time_from_lmp(
-    params: &LarsonMillerParams,
-    lmp: f64,
-    t_kelvin: f64,
-) -> f64 {
+pub fn rupture_time_from_lmp(params: &LarsonMillerParams, lmp: f64, t_kelvin: f64) -> f64 {
     if t_kelvin <= 0.0 {
         return f64::INFINITY;
     }

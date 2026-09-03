@@ -75,8 +75,7 @@ pub fn strain_amplitude_at(params: &StrainLifeParams, n_f: f64) -> f64 {
     let two_n = 2.0 * n_f;
     let elastic = params.basquin.sigma_f_prime / params.youngs_modulus;
     let elastic_amp = elastic * two_n.powf(params.basquin.b);
-    let plastic_amp = params.coffin_manson.epsilon_f_prime
-        * two_n.powf(params.coffin_manson.c);
+    let plastic_amp = params.coffin_manson.epsilon_f_prime * two_n.powf(params.coffin_manson.c);
     elastic_amp + plastic_amp
 }
 

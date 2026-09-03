@@ -13,9 +13,8 @@
 //! phase fractions and Vickers hardness.
 
 use tpt_mat_heat::{
-    hardness_from_fractions, hardness_martensite, simulate, AgingParams,
-    AnnealingParams, HeatTreatmentProcess, PhaseHardness, QuenchingParams,
-    TemperingParams,
+    hardness_from_fractions, hardness_martensite, simulate, AgingParams, AnnealingParams,
+    HeatTreatmentProcess, PhaseHardness, QuenchingParams, TemperingParams,
 };
 use tpt_mat_heat_treatment as tpt_mat_heat;
 
@@ -79,7 +78,13 @@ fn main() {
     // Cross-check the rule-of-mixtures and Krauss regression.
     let table = PhaseHardness::default();
     let hv_check = hardness_from_fractions(
-        &[r_quench.martensite_fraction, 0.0, 0.0, 0.0, r_quench.austenite_fraction],
+        &[
+            r_quench.martensite_fraction,
+            0.0,
+            0.0,
+            0.0,
+            r_quench.austenite_fraction,
+        ],
         &table,
         0.0,
     );

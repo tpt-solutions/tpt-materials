@@ -35,19 +35,11 @@ mod kachanov;
 mod lemaitre;
 mod miner;
 
-pub use effective_stress::{
-    effective_stress, effective_youngs_modulus, stress_triaxiality,
-};
+pub use effective_stress::{effective_stress, effective_youngs_modulus, stress_triaxiality};
 pub use gtn::{
-    gtn_yield_function, has_failed, is_coalescing, update_porosity,
-    GtnParams, Q1_DEFAULT, Q2_DEFAULT, Q3_DEFAULT,
+    gtn_yield_function, has_failed, is_coalescing, update_porosity, GtnParams, Q1_DEFAULT,
+    Q2_DEFAULT, Q3_DEFAULT,
 };
-pub use kachanov::{
-    kachanov_damage_rate, kachanov_rupture_time, KachanovParams,
-};
-pub use lemaitre::{
-    lemaitre_damage_rate, lemaitre_damage_step, LemaitreParams,
-};
-pub use miner::{
-    miner_damage_accumulation, miner_remaining_life, MinerCyclicInputs,
-};
+pub use kachanov::{kachanov_damage_rate, kachanov_rupture_time, KachanovParams};
+pub use lemaitre::{lemaitre_damage_rate, lemaitre_damage_step, LemaitreParams};
+pub use miner::{miner_damage_accumulation, miner_remaining_life, MinerCyclicInputs};

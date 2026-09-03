@@ -1,0 +1,21 @@
+[package]
+name = "additive-manufacturing-microstructure"
+description = "Example: LPBF Ti-6Al-4V thermal history, G-R microstructure map, and residual-stress field"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+authors.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+tpt-mat-additive = { path = "../../crates/tpt-mat-additive", version = "0.1" }

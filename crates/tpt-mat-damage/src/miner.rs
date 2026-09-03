@@ -40,10 +40,7 @@ pub fn miner_damage_accumulation(blocks: &[MinerCyclicInputs]) -> f64 {
 /// Remaining-life fraction: how many *additional* cycles are
 /// allowed at the *current* stress level before Miner damage
 /// reaches 1.  Negative means the structure has already failed.
-pub fn miner_remaining_life(
-    blocks: &[MinerCyclicInputs],
-    current_d_per_cycle: f64,
-) -> f64 {
+pub fn miner_remaining_life(blocks: &[MinerCyclicInputs], current_d_per_cycle: f64) -> f64 {
     if current_d_per_cycle <= 0.0 {
         return f64::INFINITY;
     }
@@ -64,8 +61,14 @@ mod tests {
     #[test]
     fn miner_damage_sums_individual_contributions() {
         let blocks = vec![
-            MinerCyclicInputs { n_i: 100.0, n_failure_i: 1000.0 },
-            MinerCyclicInputs { n_i: 500.0, n_failure_i: 1000.0 },
+            MinerCyclicInputs {
+                n_i: 100.0,
+                n_failure_i: 1000.0,
+            },
+            MinerCyclicInputs {
+                n_i: 500.0,
+                n_failure_i: 1000.0,
+            },
         ];
         let d = miner_damage_accumulation(&blocks);
         assert_relative_eq!(d, 0.1 + 0.5, epsilon = 1e-12);
@@ -73,13 +76,19 @@ mod tests {
 
     #[test]
     fn miner_damage_ignores_blocks_with_zero_n_failure() {
-        let blocks = vec![MinerCyclicInputs { n_i: 100.0, n_failure_i: 0.0 }];
+        let blocks = vec![MinerCyclicInputs {
+            n_i: 100.0,
+            n_failure_i: 0.0,
+        }];
         assert_eq!(miner_damage_accumulation(&blocks), 0.0);
     }
 
     #[test]
     fn remaining_life_decreases_with_existing_damage() {
-        let blocks = vec![MinerCyclicInputs { n_i: 500.0, n_failure_i: 1000.0 }];
+        let blocks = vec![MinerCyclicInputs {
+            n_i: 500.0,
+            n_failure_i: 1000.0,
+        }];
         let n_remaining = miner_remaining_life(&blocks, 0.001);
         // Damage 0.5 + 500 more cycles at 0.001/cycle ⇒ 1000 left.
         assert!((n_remaining - 500.0).abs() < 1e-6);
@@ -87,7 +96,10 @@ mod tests {
 
     #[test]
     fn remaining_life_is_infinite_for_zero_rate() {
-        let blocks = vec![MinerCyclicInputs { n_i: 100.0, n_failure_i: 1000.0 }];
+        let blocks = vec![MinerCyclicInputs {
+            n_i: 100.0,
+            n_failure_i: 1000.0,
+        }];
         assert!(miner_remaining_life(&blocks, 0.0).is_infinite());
     }
 }

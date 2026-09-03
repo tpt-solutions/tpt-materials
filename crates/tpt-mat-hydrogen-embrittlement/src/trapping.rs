@@ -24,10 +24,7 @@ const R_GAS: f64 = 8.314_462;
 /// `θ_T` and equilibrium constant `K = exp(−E_B/RT)`:
 ///
 /// `∂C_T/∂C_L = N_T K / (1 + K C_L)²`
-pub fn hydrogen_diffusivity_effective(
-    c_lattice: f64,
-    params: &OrianiParams,
-) -> f64 {
+pub fn hydrogen_diffusivity_effective(c_lattice: f64, params: &OrianiParams) -> f64 {
     let k_eq = (-params.binding_energy_j_per_mol / (R_GAS * params.temperature_k)).exp();
     let d_trap_dc_l = params.trap_density * k_eq / (1.0 + k_eq * c_lattice).powi(2);
     params.d_lattice / (1.0 + d_trap_dc_l)

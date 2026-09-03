@@ -12,8 +12,7 @@ pub fn lsw_coarsening_rate(
     if molar_volume.abs() < 1.0e-30 {
         return 0.0;
     }
-    8.0 * interfacial_energy * diffusivity * equilibrium_concentration
-        / (9.0 * molar_volume)
+    8.0 * interfacial_energy * diffusivity * equilibrium_concentration / (9.0 * molar_volume)
 }
 
 /// Mean-radius-cubed growth `R̄³(t) − R̄³(0) = K t`.
@@ -40,7 +39,11 @@ mod tests {
 
     #[test]
     fn rate_constant_zero_when_molar_volume_zero() {
-        assert!(approx(lsw_coarsening_rate(0.5, 1.0e-15, 0.01, 0.0), 0.0, 1.0e-30));
+        assert!(approx(
+            lsw_coarsening_rate(0.5, 1.0e-15, 0.01, 0.0),
+            0.0,
+            1.0e-30
+        ));
     }
 
     #[test]

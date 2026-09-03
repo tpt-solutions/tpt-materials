@@ -17,63 +17,105 @@
 
 #![warn(missing_docs)]
 
-#[cfg(feature = "crystallography")]
+#[cfg(feature = "additive")]
 #[allow(unused_extern_crates)]
-extern crate tpt_mat_crystallography;
-#[cfg(feature = "crystal-plasticity")]
+extern crate tpt_mat_additive;
+#[cfg(feature = "battery")]
 #[allow(unused_extern_crates)]
-extern crate tpt_mat_crystal_plasticity;
-#[cfg(feature = "hardening")]
-#[allow(unused_extern_crates)]
-extern crate tpt_mat_hardening;
-#[cfg(feature = "texture")]
-#[allow(unused_extern_crates)]
-extern crate tpt_mat_texture;
-#[cfg(feature = "phase-field")]
-#[allow(unused_extern_crates)]
-extern crate tpt_mat_phase_field;
-#[cfg(feature = "grain-growth")]
-#[allow(unused_extern_crates)]
-extern crate tpt_mat_grain_growth;
-#[cfg(feature = "solidification")]
-#[allow(unused_extern_crates)]
-extern crate tpt_mat_solidification;
-#[cfg(feature = "diffusion")]
-#[allow(unused_extern_crates)]
-extern crate tpt_mat_diffusion;
-#[cfg(feature = "phase-transform")]
-#[allow(unused_extern_crates)]
-extern crate tpt_mat_phase_transform;
+extern crate tpt_mat_battery;
 #[cfg(feature = "calphad")]
 #[allow(unused_extern_crates)]
 extern crate tpt_mat_calphad;
-#[cfg(feature = "homogenization")]
-#[allow(unused_extern_crates)]
-extern crate tpt_mat_homogenization;
-#[cfg(feature = "rve")]
-#[allow(unused_extern_crates)]
-extern crate tpt_mat_rve;
 #[cfg(feature = "composite-micro")]
 #[allow(unused_extern_crates)]
 extern crate tpt_mat_composite_micro;
-#[cfg(feature = "damage")]
+#[cfg(feature = "corrosion")]
 #[allow(unused_extern_crates)]
-extern crate tpt_mat_damage;
-#[cfg(feature = "fatigue")]
-#[allow(unused_extern_crates)]
-extern crate tpt_mat_fatigue;
+extern crate tpt_mat_corrosion;
 #[cfg(feature = "creep")]
 #[allow(unused_extern_crates)]
 extern crate tpt_mat_creep;
-#[cfg(feature = "heat-treatment")]
+#[cfg(feature = "crystal-plasticity")]
 #[allow(unused_extern_crates)]
-extern crate tpt_mat_heat_treatment;
+extern crate tpt_mat_crystal_plasticity;
+#[cfg(feature = "crystallography")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_crystallography;
+#[cfg(feature = "damage")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_damage;
 #[cfg(feature = "database")]
 #[allow(unused_extern_crates)]
 extern crate tpt_mat_database;
+#[cfg(feature = "diffusion")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_diffusion;
+#[cfg(feature = "dislocation")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_dislocation;
+#[cfg(feature = "fatigue")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_fatigue;
+#[cfg(feature = "fatigue-micro")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_fatigue_micro;
+#[cfg(feature = "fracture")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_fracture;
+#[cfg(feature = "grain-growth")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_grain_growth;
+#[cfg(feature = "hardening")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_hardening;
+#[cfg(feature = "heat-treatment")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_heat_treatment;
+#[cfg(feature = "homogenization")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_homogenization;
+#[cfg(feature = "hydrogel")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_hydrogel;
+#[cfg(feature = "hydrogen-embrittlement")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_hydrogen_embrittlement;
+#[cfg(feature = "hydrogen-storage")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_hydrogen_storage;
+#[cfg(feature = "machine-learning")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_machine_learning;
+#[cfg(feature = "phase-field")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_phase_field;
+#[cfg(feature = "phase-transform")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_phase_transform;
+#[cfg(feature = "polymer")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_polymer;
+#[cfg(feature = "precipitation")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_precipitation;
+#[cfg(feature = "rve")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_rve;
+#[cfg(feature = "solidification")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_solidification;
+#[cfg(feature = "texture")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_texture;
+#[cfg(feature = "thermal")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_thermal;
 #[cfg(feature = "wasm")]
 #[allow(unused_extern_crates)]
 extern crate tpt_mat_wasm;
+#[cfg(feature = "welding")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_welding;
 
 #[cfg(feature = "crystallography")]
 pub mod crystallography {
@@ -165,6 +207,18 @@ pub mod fatigue {
     pub use tpt_mat_fatigue::*;
 }
 
+#[cfg(feature = "fatigue-micro")]
+pub mod fatigue_micro {
+    //! Re-export of `tpt-mat-fatigue-micro`.
+    pub use tpt_mat_fatigue_micro::*;
+}
+
+#[cfg(feature = "corrosion")]
+pub mod corrosion {
+    //! Re-export of `tpt-mat-corrosion`.
+    pub use tpt_mat_corrosion::*;
+}
+
 #[cfg(feature = "creep")]
 pub mod creep {
     //! Re-export of `tpt-mat-creep`.
@@ -177,10 +231,82 @@ pub mod heat_treatment {
     pub use tpt_mat_heat_treatment::*;
 }
 
+#[cfg(feature = "welding")]
+pub mod welding {
+    //! Re-export of `tpt-mat-welding`.
+    pub use tpt_mat_welding::*;
+}
+
+#[cfg(feature = "battery")]
+pub mod battery {
+    //! Re-export of `tpt-mat-battery`.
+    pub use tpt_mat_battery::*;
+}
+
+#[cfg(feature = "additive")]
+pub mod additive {
+    //! Re-export of `tpt-mat-additive`.
+    pub use tpt_mat_additive::*;
+}
+
 #[cfg(feature = "database")]
 pub mod database {
     //! Re-export of `tpt-mat-database`.
     pub use tpt_mat_database::*;
+}
+
+#[cfg(feature = "machine-learning")]
+pub mod machine_learning {
+    //! Re-export of `tpt-mat-machine-learning`.
+    pub use tpt_mat_machine_learning::*;
+}
+
+#[cfg(feature = "fracture")]
+pub mod fracture {
+    //! Re-export of `tpt-mat-fracture`.
+    pub use tpt_mat_fracture::*;
+}
+
+#[cfg(feature = "thermal")]
+pub mod thermal {
+    //! Re-export of `tpt-mat-thermal`.
+    pub use tpt_mat_thermal::*;
+}
+
+#[cfg(feature = "dislocation")]
+pub mod dislocation {
+    //! Re-export of `tpt-mat-dislocation`.
+    pub use tpt_mat_dislocation::*;
+}
+
+#[cfg(feature = "precipitation")]
+pub mod precipitation {
+    //! Re-export of `tpt-mat-precipitation`.
+    pub use tpt_mat_precipitation::*;
+}
+
+#[cfg(feature = "hydrogen-embrittlement")]
+pub mod hydrogen_embrittlement {
+    //! Re-export of `tpt-mat-hydrogen-embrittlement`.
+    pub use tpt_mat_hydrogen_embrittlement::*;
+}
+
+#[cfg(feature = "polymer")]
+pub mod polymer {
+    //! Re-export of `tpt-mat-polymer`.
+    pub use tpt_mat_polymer::*;
+}
+
+#[cfg(feature = "hydrogel")]
+pub mod hydrogel {
+    //! Re-export of `tpt-mat-hydrogel`.
+    pub use tpt_mat_hydrogel::*;
+}
+
+#[cfg(feature = "hydrogen-storage")]
+pub mod hydrogen_storage {
+    //! Re-export of `tpt-mat-hydrogen-storage`.
+    pub use tpt_mat_hydrogen_storage::*;
 }
 
 #[cfg(feature = "wasm")]

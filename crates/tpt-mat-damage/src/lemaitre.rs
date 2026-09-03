@@ -33,11 +33,7 @@ impl Default for LemaitreParams {
 }
 
 /// Damage rate `Ḋ` at the current damage state.
-pub fn lemaitre_damage_rate(
-    params: &LemaitreParams,
-    sigma_eq: f64,
-    damage: f64,
-) -> f64 {
+pub fn lemaitre_damage_rate(params: &LemaitreParams, sigma_eq: f64, damage: f64) -> f64 {
     if damage >= 1.0 {
         return f64::INFINITY;
     }
@@ -53,12 +49,7 @@ pub fn lemaitre_damage_rate(
 
 /// Forward-Euler advance of the damage state by a time step `Δt`.
 /// Clamps `D ∈ [0, 1)` and returns the new damage.
-pub fn lemaitre_damage_step(
-    params: &LemaitreParams,
-    sigma_eq: f64,
-    damage: f64,
-    dt: f64,
-) -> f64 {
+pub fn lemaitre_damage_step(params: &LemaitreParams, sigma_eq: f64, damage: f64, dt: f64) -> f64 {
     if damage >= 1.0 {
         return 1.0;
     }

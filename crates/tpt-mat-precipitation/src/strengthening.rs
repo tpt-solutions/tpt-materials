@@ -50,8 +50,9 @@ pub fn orowan_bypass_strengthening(
         return 0.0;
     }
     let one_minus_nu = denom.sqrt();
-    let spacing = precipitate_radius * ((2.0 * core::f64::consts::PI / (3.0 * volume_fraction)).sqrt()
-        - core::f64::consts::PI / 2.0);
+    let spacing = precipitate_radius
+        * ((2.0 * core::f64::consts::PI / (3.0 * volume_fraction)).sqrt()
+            - core::f64::consts::PI / 2.0);
     if spacing <= 0.0 {
         return 0.0;
     }
@@ -69,8 +70,9 @@ pub fn shearing_strengthening(
     if volume_fraction <= 0.0 || precipitate_radius <= 0.0 {
         return 0.0;
     }
-    let spacing = precipitate_radius * ((2.0 * core::f64::consts::PI / (3.0 * volume_fraction)).sqrt()
-        - core::f64::consts::PI / 2.0);
+    let spacing = precipitate_radius
+        * ((2.0 * core::f64::consts::PI / (3.0 * volume_fraction)).sqrt()
+            - core::f64::consts::PI / 2.0);
     if spacing <= 0.0 {
         return 0.0;
     }

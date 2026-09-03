@@ -67,8 +67,7 @@ pub fn effective_cte(
                 let fi = f[i];
                 // Kerner's volume-weighted contribution:
                 let dalpha = (ki - k_m) * (ai - alpha_m);
-                let num = 3.0 * (1.0 - fi) * k_m * dalpha
-                    + 4.0 * g_m * (alpha_m * ki - ai * k_m);
+                let num = 3.0 * (1.0 - fi) * k_m * dalpha + 4.0 * g_m * (alpha_m * ki - ai * k_m);
                 let denom = (3.0 * k_m + 4.0 * g_m) * fi * ki
                     + 4.0 * g_m * (1.0 - fi) * k_m
                     + 12.0 * k_m * g_m;
@@ -140,8 +139,7 @@ mod tests {
             &[40.0, 80.0],
             &[0.5, 0.5],
         );
-        let expected = (0.5 * 1.0e-5 * 100.0 + 0.5 * 2.0e-5 * 300.0)
-            / (0.5 * 100.0 + 0.5 * 300.0);
+        let expected = (0.5 * 1.0e-5 * 100.0 + 0.5 * 2.0e-5 * 300.0) / (0.5 * 100.0 + 0.5 * 300.0);
         assert!(approx(alpha, expected, 1.0e-9));
     }
 

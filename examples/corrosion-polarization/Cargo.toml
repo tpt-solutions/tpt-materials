@@ -1,0 +1,21 @@
+[package]
+name = "corrosion-polarization"
+description = "Example: Fe-in-aerated-NaCl polarization curve, mixed-potential corrosion rate and Ti-6Al-4V passivation comparison"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+authors.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+tpt-mat-corrosion = { path = "../../crates/tpt-mat-corrosion", version = "0.1" }

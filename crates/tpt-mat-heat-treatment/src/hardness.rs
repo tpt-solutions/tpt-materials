@@ -46,11 +46,7 @@ impl Default for PhaseHardness {
 /// - `table`     — per-phase hardness values
 /// - `extra`     — additional contribution from precipitation
 ///   hardening (aging) in HV
-pub fn hardness_from_fractions(
-    fractions: &[f64; 5],
-    table: &PhaseHardness,
-    extra: f64,
-) -> f64 {
+pub fn hardness_from_fractions(fractions: &[f64; 5], table: &PhaseHardness, extra: f64) -> f64 {
     let sum: f64 = fractions.iter().sum();
     if sum <= 0.0 {
         return table.ferrite;

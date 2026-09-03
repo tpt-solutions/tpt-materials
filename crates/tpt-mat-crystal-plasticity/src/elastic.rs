@@ -154,8 +154,8 @@ fn inv6(m: [[f64; 6]; 6]) -> [[f64; 6]; 6] {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tpt_testkit::assert_relative_eq;
     use tpt_math_linalg_fixed::SymMat3;
+    use tpt_testkit::assert_relative_eq;
 
     #[test]
     fn cubic_is_symmetric() {

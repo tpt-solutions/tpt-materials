@@ -39,9 +39,7 @@ mod diffusivity;
 mod resistance;
 mod specific_heat;
 
-pub use conductivity::{
-    effective_conductivity, hashin_shtrikman_k, ConductivityBound,
-};
+pub use conductivity::{effective_conductivity, hashin_shtrikman_k, ConductivityBound};
 pub use cte::{effective_cte, CteBound};
 pub use diffusivity::{bruggeman_diffusivity, effective_diffusivity};
 pub use resistance::kapitza_correction;

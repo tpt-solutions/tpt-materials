@@ -22,6 +22,5 @@ pub use embrittlement::{
 };
 pub use flux::stress_driven_flux;
 pub use trapping::{
-    hydrogen_diffusivity_effective, mcnabb_foster_trapping_rate, McNabbFosterParams,
-    OrianiParams,
+    hydrogen_diffusivity_effective, mcnabb_foster_trapping_rate, McNabbFosterParams, OrianiParams,
 };

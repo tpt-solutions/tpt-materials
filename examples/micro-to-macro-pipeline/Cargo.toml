@@ -1,0 +1,24 @@
+[package]
+name = "micro-to-macro-pipeline"
+description = "Example: microstructure (RVE) -> homogenised property -> device-level input (battery DegradationCurve)"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+authors.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+tpt-mat-homogenization = { path = "../../crates/tpt-mat-homogenization", version = "0.1" }
+tpt-mat-rve = { path = "../../crates/tpt-mat-rve", version = "0.1" }
+tpt-mat-battery = { path = "../../crates/tpt-mat-battery", version = "0.1" }
+tpt-mat-database = { path = "../../crates/tpt-mat-database", version = "0.1" }

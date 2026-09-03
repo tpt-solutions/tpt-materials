@@ -160,12 +160,7 @@ pub fn gtn_yield_function(
 /// - `deps_p_kk` — plastic volumetric strain increment `Δε^p_kk`
 /// - `deps_p_eq` — plastic equivalent strain increment `Δε^p_eq ≥ 0`
 /// - `params`   — GTN parameters (`f_n`, `ε_n`, `s_n`)
-pub fn update_porosity(
-    f: f64,
-    deps_p_kk: f64,
-    deps_p_eq: f64,
-    params: &GtnParams,
-) -> f64 {
+pub fn update_porosity(f: f64, deps_p_kk: f64, deps_p_eq: f64, params: &GtnParams) -> f64 {
     let strain_driven_nucleation = nucleation_rate(deps_p_eq, params);
     let df_growth = (1.0 - f) * deps_p_kk;
     let df_nucleation = strain_driven_nucleation * deps_p_eq;

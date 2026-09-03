@@ -15,8 +15,7 @@ pub fn wlc_force_extension(persistence_length: f64, contour_length: f64, stretch
     if one_minus <= 0.0 {
         return f64::INFINITY;
     }
-    1.0 / (4.0 * persistence_length * one_minus * one_minus)
-        - 1.0 / (4.0 * persistence_length)
+    1.0 / (4.0 * persistence_length * one_minus * one_minus) - 1.0 / (4.0 * persistence_length)
         + stretch / (persistence_length * contour_length)
 }
 

@@ -1,0 +1,25 @@
+[package]
+name = "tpt-mat-battery"
+description = "Battery active-material modelling: Li diffusion in spherical particles, SEI growth, particle cracking, lithium plating, transition-metal dissolution, capacity fade curves"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+authors.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+serde = { workspace = true }
+thiserror = { workspace = true }
+tpt-science = { path = "../tpt-science", version = "0.1" }
+
+[dev-dependencies]
+tpt-testkit = { workspace = true }

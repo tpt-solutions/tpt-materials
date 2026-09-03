@@ -2,9 +2,7 @@
 
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
-use tpt_mat_phase_transform::{
-    AvramiModel, AvramiParams, KoistinenMarburger, KMParams,
-};
+use tpt_mat_phase_transform::{AvramiModel, AvramiParams, KMParams, KoistinenMarburger};
 
 use crate::hardness::{hardness_from_fractions, PhaseHardness};
 
@@ -109,9 +107,7 @@ pub enum HeatTreatmentError {
 }
 
 /// Simulate a heat-treatment process.
-pub fn simulate(
-    process: &HeatTreatmentProcess,
-) -> Result<HeatTreatmentResult, HeatTreatmentError> {
+pub fn simulate(process: &HeatTreatmentProcess) -> Result<HeatTreatmentResult, HeatTreatmentError> {
     match process {
         HeatTreatmentProcess::Annealing(p) => simulate_annealing(p),
         HeatTreatmentProcess::Quenching(p) => simulate_quench(p),
@@ -120,9 +116,7 @@ pub fn simulate(
     }
 }
 
-fn simulate_annealing(
-    p: &AnnealingParams,
-) -> Result<HeatTreatmentResult, HeatTreatmentError> {
+fn simulate_annealing(p: &AnnealingParams) -> Result<HeatTreatmentResult, HeatTreatmentError> {
     if p.austenitise_temperature <= 0.0 {
         return Err(HeatTreatmentError::InvalidTemperature(format!(
             "austenitise_temperature = {}",
@@ -156,9 +150,7 @@ fn simulate_annealing(
     })
 }
 
-fn simulate_quench(
-    p: &QuenchingParams,
-) -> Result<HeatTreatmentResult, HeatTreatmentError> {
+fn simulate_quench(p: &QuenchingParams) -> Result<HeatTreatmentResult, HeatTreatmentError> {
     if p.ms_temperature <= 0.0 {
         return Err(HeatTreatmentError::InvalidTemperature(format!(
             "ms_temperature = {}",
@@ -194,9 +186,7 @@ fn simulate_quench(
     })
 }
 
-fn simulate_tempering(
-    p: &TemperingParams,
-) -> Result<HeatTreatmentResult, HeatTreatmentError> {
+fn simulate_tempering(p: &TemperingParams) -> Result<HeatTreatmentResult, HeatTreatmentError> {
     if !(0.0..=1.0).contains(&p.initial_martensite) {
         return Err(HeatTreatmentError::InvalidFraction(format!(
             "initial_martensite = {}",
@@ -230,9 +220,7 @@ fn simulate_tempering(
     })
 }
 
-fn simulate_aging(
-    p: &AgingParams,
-) -> Result<HeatTreatmentResult, HeatTreatmentError> {
+fn simulate_aging(p: &AgingParams) -> Result<HeatTreatmentResult, HeatTreatmentError> {
     if p.aging_temperature <= 0.0 {
         return Err(HeatTreatmentError::InvalidTemperature(format!(
             "aging_temperature = {}",

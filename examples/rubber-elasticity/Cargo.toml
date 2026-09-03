@@ -1,0 +1,21 @@
+[package]
+name = "rubber-elasticity"
+description = "Example: Arruda-Boyce 8-chain rubber stress-stretch and Worm-Like-Chain force-extension"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+authors.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+tpt-mat-polymer = { path = "../../crates/tpt-mat-polymer", version = "0.1" }
