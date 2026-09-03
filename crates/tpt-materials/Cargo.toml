@@ -40,136 +40,117 @@ full = [
     "wasm",
 ]
 
-crystallography = ["crystallography_dep"]
-crystal-plasticity = ["crystal_plasticity_dep", "hardening_dep"]
-hardening = ["hardening_dep"]
-texture = ["texture_dep"]
-phase-field = ["phase_field_dep"]
-grain-growth = ["grain_growth_dep"]
-solidification = ["solidification_dep"]
-diffusion = ["diffusion_dep"]
-phase-transform = ["phase_transform_dep"]
-calphad = ["calphad_dep"]
-homogenization = ["homogenization_dep"]
-rve = ["rve_dep"]
-composite-micro = ["composite_micro_dep"]
-damage = ["damage_dep"]
-fatigue = ["fatigue_dep"]
-creep = ["creep_dep"]
-heat-treatment = ["heat_treatment_dep"]
-database = ["database_dep"]
-wasm = ["wasm_dep"]
+crystallography = ["tpt-mat-crystallography"]
+crystal-plasticity = ["tpt-mat-crystal-plasticity", "tpt-mat-hardening"]
+hardening = ["tpt-mat-hardening"]
+texture = ["tpt-mat-texture"]
+phase-field = ["tpt-mat-phase-field"]
+grain-growth = ["tpt-mat-grain-growth"]
+solidification = ["tpt-mat-solidification"]
+diffusion = ["tpt-mat-diffusion"]
+phase-transform = ["tpt-mat-phase-transform"]
+calphad = ["tpt-mat-calphad"]
+homogenization = ["tpt-mat-homogenization"]
+rve = ["tpt-mat-rve"]
+composite-micro = ["tpt-mat-composite-micro"]
+damage = ["tpt-mat-damage"]
+fatigue = ["tpt-mat-fatigue"]
+creep = ["tpt-mat-creep"]
+heat-treatment = ["tpt-mat-heat-treatment"]
+database = ["tpt-mat-database"]
+wasm = ["tpt-mat-wasm"]
 
-[dependencies.crystallography_dep]
+[dependencies.tpt-mat-crystallography]
 path = "../tpt-mat-crystallography"
 version = "0.1"
 optional = true
-package = "tpt-mat-crystallography"
 
-[dependencies.crystal_plasticity_dep]
+[dependencies.tpt-mat-crystal-plasticity]
 path = "../tpt-mat-crystal-plasticity"
 version = "0.1"
 optional = true
-package = "tpt-mat-crystal-plasticity"
 
-[dependencies.hardening_dep]
+[dependencies.tpt-mat-hardening]
 path = "../tpt-mat-hardening"
 version = "0.1"
 optional = true
-package = "tpt-mat-hardening"
 
-[dependencies.texture_dep]
+[dependencies.tpt-mat-texture]
 path = "../tpt-mat-texture"
 version = "0.1"
 optional = true
-package = "tpt-mat-texture"
 
-[dependencies.phase_field_dep]
+[dependencies.tpt-mat-phase-field]
 path = "../tpt-mat-phase-field"
 version = "0.1"
 optional = true
-package = "tpt-mat-phase-field"
 
-[dependencies.grain_growth_dep]
+[dependencies.tpt-mat-grain-growth]
 path = "../tpt-mat-grain-growth"
 version = "0.1"
 optional = true
-package = "tpt-mat-grain-growth"
 
-[dependencies.solidification_dep]
+[dependencies.tpt-mat-solidification]
 path = "../tpt-mat-solidification"
 version = "0.1"
 optional = true
-package = "tpt-mat-solidification"
 
-[dependencies.diffusion_dep]
+[dependencies.tpt-mat-diffusion]
 path = "../tpt-mat-diffusion"
 version = "0.1"
 optional = true
-package = "tpt-mat-diffusion"
 
-[dependencies.phase_transform_dep]
+[dependencies.tpt-mat-phase-transform]
 path = "../tpt-mat-phase-transform"
 version = "0.1"
 optional = true
-package = "tpt-mat-phase-transform"
 
-[dependencies.calphad_dep]
+[dependencies.tpt-mat-calphad]
 path = "../tpt-mat-calphad"
 version = "0.1"
 optional = true
-package = "tpt-mat-calphad"
 
-[dependencies.homogenization_dep]
+[dependencies.tpt-mat-homogenization]
 path = "../tpt-mat-homogenization"
 version = "0.1"
 optional = true
-package = "tpt-mat-homogenization"
 
-[dependencies.rve_dep]
+[dependencies.tpt-mat-rve]
 path = "../tpt-mat-rve"
 version = "0.1"
 optional = true
-package = "tpt-mat-rve"
 
-[dependencies.composite_micro_dep]
+[dependencies.tpt-mat-composite-micro]
 path = "../tpt-mat-composite-micro"
 version = "0.1"
 optional = true
-package = "tpt-mat-composite-micro"
 
-[dependencies.damage_dep]
+[dependencies.tpt-mat-damage]
 path = "../tpt-mat-damage"
 version = "0.1"
 optional = true
-package = "tpt-mat-damage"
 
-[dependencies.fatigue_dep]
+[dependencies.tpt-mat-fatigue]
 path = "../tpt-mat-fatigue"
 version = "0.1"
 optional = true
-package = "tpt-mat-fatigue"
 
-[dependencies.creep_dep]
+[dependencies.tpt-mat-creep]
 path = "../tpt-mat-creep"
 version = "0.1"
 optional = true
-package = "tpt-mat-creep"
 
-[dependencies.heat_treatment_dep]
+[dependencies.tpt-mat-heat-treatment]
 path = "../tpt-mat-heat-treatment"
 version = "0.1"
 optional = true
-package = "tpt-mat-heat-treatment"
 
-[dependencies.database_dep]
+[dependencies.tpt-mat-database]
 path = "../tpt-mat-database"
 version = "0.1"
 optional = true
-package = "tpt-mat-database"
 
-[dependencies.wasm_dep]
+[dependencies.tpt-mat-wasm]
 path = "../tpt-mat-wasm"
 version = "0.1"
 optional = true
-package = "tpt-mat-wasm"

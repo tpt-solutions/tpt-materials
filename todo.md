@@ -727,3 +727,47 @@ Crate-level changes made in this session for Phase 5:
 
 150 tests pass across 19 crates (Phase 1–5).  No build warnings
 beyond pedantic clippy lints.
+
+---
+
+## Session summary (2026-09-03 — Phases 6 / 7 / 8 / 9 / 10)
+
+Crate-level changes made in this session:
+
+| Crate | Change |
+|---|---|
+| `tpt-mat-damage` | NEW: **GTN** (Gurson–Tvergaard–Needleman) porous-plasticity yield function + porosity update + Chu–Needleman nucleation (6 unit tests, 25 total) |
+| `tpt-mat-heat-treatment` (NEW) | Anneal / quench / temper / age processes composing JMAK + Koistinen–Marburger kinetics with a Maynier-style rule-of-mixtures hardness regression (12 unit tests) |
+| `tpt-mat-database` (NEW) | `MaterialRecord` (composition / mechanical / thermal / electrical) + `DataSource` provenance (Textbook / Standard / NIST / Lab / Datasheet) + `PropertyQuery` + `MaterialsDatabase::search_by_property` (4 unit tests) + `examples/database-material-search` |
+| `tpt-materials` (NEW facade) | Umbrella / facade crate behind per-domain cargo features (`crystal-plasticity`, `phase-field`, …, `full`) re-exporting every `tpt-mat-*` domain crate (1 unit test) |
+| `tpt-mat-fracture` (NEW) | Stress intensity factors (centre / edge / Mode II / Mode III), Irwin energy-release rate, bilinear cohesive + Benzeggagh–Kenane mixed mode, AT1/AT2 phase-field fracture, ASTM E1921 master curve (23 unit tests) |
+| `tpt-mat-thermal` (NEW) | Effective conductivity (Voigt / Reuss / VRH / HS / Maxwell–Garnett) + effective CTE (Turner / Kerner / Rosen–Hashin) + specific heat + Bruggeman / tortuosity diffusivity + Kapitza laminate correction (19 unit tests) |
+| `tpt-mat-dislocation` (NEW) | Kocks–Mecking evolution + Taylor stress + GND density from Nye tensor + Armstrong–Frederick back-stress (11 unit tests) |
+| `tpt-mat-precipitation` (NEW) | Classical nucleation theory (Turnbull–Fisher) + KWN size-class solver + LSW coarsening + Orowan / shearing strengthening (14 unit tests) |
+| `tpt-mat-hydrogen-embrittlement` (NEW) | Oriani local-equilibrium `D_eff` + McNabb–Foster trapping kinetics + stress-driven uphill H flux + HEDE / HELP thresholds + susceptibility index (11 unit tests) |
+| `tpt-mat-polymer` (NEW) | Arruda–Boyce 8-chain rubber elasticity + WLC Marko–Siggia force–extension + FJC inverse-Langevin (11 unit tests) |
+| `tpt-mat-hydrogel` (NEW) | Flory–Rehner equilibrium swelling (root-find over `φ_p`) + Fickian slab uptake series (7 unit tests) |
+| `tpt-mat-hydrogen-storage` (NEW) | `HydrogenStorageMaterial` (metal / chemical / porous) + van 't Hoff equilibrium + PCT isotherm (4 unit tests) |
+| `examples/heat-treatment-steel` (NEW) | 4-step schedule: anneal / quench / temper / age; reports phase fractions and Vickers hardness |
+| `examples/database-material-search` (NEW) | Property-range queries over the bundled 5-material database |
+
+Test count: **323+ tests** pass across **31 crates** (Phase 1–10).  `cargo
+clippy --workspace --all-targets` clean (warnings only on the existing
+pedantic lints).  `cargo test -p tpt-materials --features full` passes.
+
+Deferred (out-of-scope for this session, listed in todo.md as pending
+implementation, kept in the deferred backlog):
+
+- Phase 6 — `tpt-mat-fatigue-micro` (FIP, Findley, FatemiSocie, SmithWatsonTopper)
+- Phase 6 — `tpt-mat-corrosion` (Butler–Volmer + Tafel polarisation)
+- Phase 7 — `tpt-mat-battery`, `tpt-mat-additive`, `tpt-mat-welding`
+- Phase 8 — `tpt-mat-machine-learning`, FFT homogenisation, full CP-FEM
+  Newton–Raphson, cross-repo output adapters, full WASM bindings
+- RFCs 0005 (degradation) / 0006 / 0007 (AM / heat-treatment) /
+  0008 (informatics) / 0009 (soft matter) / 0010 (H₂ storage)
+- Golden test datasets for fatigue / corrosion / AM / battery
+- Public GitHub Projects roadmap board (external)
+
+These items are well-specified in the Phase 6–8 sections above; each
+new crate follows the same template as the Phase 10 crates implemented
+in this session.

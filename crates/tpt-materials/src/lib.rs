@@ -18,6 +18,64 @@
 #![warn(missing_docs)]
 
 #[cfg(feature = "crystallography")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_crystallography;
+#[cfg(feature = "crystal-plasticity")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_crystal_plasticity;
+#[cfg(feature = "hardening")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_hardening;
+#[cfg(feature = "texture")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_texture;
+#[cfg(feature = "phase-field")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_phase_field;
+#[cfg(feature = "grain-growth")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_grain_growth;
+#[cfg(feature = "solidification")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_solidification;
+#[cfg(feature = "diffusion")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_diffusion;
+#[cfg(feature = "phase-transform")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_phase_transform;
+#[cfg(feature = "calphad")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_calphad;
+#[cfg(feature = "homogenization")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_homogenization;
+#[cfg(feature = "rve")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_rve;
+#[cfg(feature = "composite-micro")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_composite_micro;
+#[cfg(feature = "damage")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_damage;
+#[cfg(feature = "fatigue")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_fatigue;
+#[cfg(feature = "creep")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_creep;
+#[cfg(feature = "heat-treatment")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_heat_treatment;
+#[cfg(feature = "database")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_database;
+#[cfg(feature = "wasm")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_wasm;
+
+#[cfg(feature = "crystallography")]
 pub mod crystallography {
     //! Re-export of `tpt-mat-crystallography`.
     pub use tpt_mat_crystallography::*;
