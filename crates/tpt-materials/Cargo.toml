@@ -48,10 +48,12 @@ full = [
     "dislocation",
     "precipitation",
     "hydrogen-embrittlement",
-    "polymer",
+"polymer",
     "hydrogel",
     "hydrogen-storage",
     "wasm",
+    "adapters",
+    "inverse",
 ]
 
 crystallography = ["tpt-mat-crystallography"]
@@ -87,6 +89,21 @@ polymer = ["tpt-mat-polymer"]
 hydrogel = ["tpt-mat-hydrogel"]
 hydrogen-storage = ["tpt-mat-hydrogen-storage"]
 wasm = ["tpt-mat-wasm"]
+inverse = ["tpt-mat-inverse"]
+adapters = ["battery"]
+
+[dependencies.tpt-mat-wasm]
+path = "../tpt-mat-wasm"
+version = "0.1"
+optional = true
+
+[dependencies.tpt-mat-inverse]
+path = "../tpt-mat-inverse"
+version = "0.1"
+optional = true
+
+[dependencies.serde]
+workspace = true
 
 [dependencies.tpt-mat-crystallography]
 path = "../tpt-mat-crystallography"
@@ -248,7 +265,3 @@ path = "../tpt-mat-hydrogen-storage"
 version = "0.1"
 optional = true
 
-[dependencies.tpt-mat-wasm]
-path = "../tpt-mat-wasm"
-version = "0.1"
-optional = true

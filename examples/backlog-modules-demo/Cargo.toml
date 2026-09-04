@@ -1,0 +1,23 @@
+[package]
+name = "backlog-modules-demo"
+description = "Demo of the spec-backlog modules: oxidation kinetics, GB segregation, recrystallization, stereology, inverse calibration"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+authors.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+tpt-mat-corrosion = { path = "../../crates/tpt-mat-corrosion", version = "0.1" }
+tpt-mat-grain-growth = { path = "../../crates/tpt-mat-grain-growth", version = "0.1" }
+tpt-mat-inverse = { path = "../../crates/tpt-mat-inverse", version = "0.1" }

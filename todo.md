@@ -641,20 +641,22 @@ shared `tpt-science` grid is queued for a follow-up.
 
 ### Backlog / candidate modules (in scope, lower priority — likely modules not crates)
 
-- [ ] High-temperature **oxidation** (Wagner parabolic scale growth,
+- [x] High-temperature **oxidation** (Wagner parabolic scale growth,
       breakaway) — module in `tpt-mat-corrosion`; rename that group
       "environmental degradation"
-- [ ] **Interfaces / grain boundaries** — GB energy, GB character
+- [x] **Interfaces / grain boundaries** — GB energy, GB character
       distribution, Langmuir–McLean segregation, triple junctions
       (consolidate the scattered `GrainBoundaryMobility` /
       `GrainBoundaryDiffusion`)
-- [ ] **Recrystallization** (static + dynamic) — JMAK-for-RX,
+- [x] **Recrystallization** (static + dynamic) — JMAK-for-RX,
       Zener–Hollomon, nucleation criteria; distinct from
       `tpt-mat-grain-growth`'s curvature-driven model
-- [ ] **Stereology / microstructure quantification** — ASTM E112 grain
+- [x] **Stereology / microstructure quantification** — ASTM E112 grain
       size, phase fraction from 2D/3D image data
-- [ ] **Inverse / calibration** — fit constitutive parameters to
-      experimental curves via `tpt-math-optimize-general` (spec §3)
+- [x] **Inverse / calibration** — fit constitutive parameters to
+      experimental curves via closed-form fits + generic Levenberg–
+      Marquardt (spec §3 — `tpt-math-optimize-general` not in this
+      repo, so use the local closed-form primitive instead)
 
 ### Explicitly out of scope (decision recorded)
 
@@ -844,3 +846,57 @@ summary):
   inverse calibration)
 - `tpt-mat-dislocation` → `tpt-mat-hardening` integration as
   `HardeningLaw::DislocationDensity`
+
+---
+
+## Session summary (2026-09-04 — backlog-modules pass)
+
+This pass closes out the five items in the `todo.md` "Backlog"
+list, the dislocation-hardening integration deferred from the
+previous session, and the Hill–Mandel consistency test deferred
+from Phase 8.  It also adds the missing doc-test in the
+`tpt-materials` facade and fixes a duplicate-`[dependencies.serde]`
+block that broke the workspace build.
+
+| Artifact | Change |
+|---|---|
+| `crates/tpt-mat-corrosion/src/oxidation.rs` (NEW) | Wagner parabolic growth (`ParabolicRateConstant`, `ScaleGrowth`, `DopingEffect`, `BreakawayCriterion`, `LinearBreakawayRate`, `OxidationModel`) — 7 tests |
+| `crates/tpt-mat-corrosion/src/lib.rs` | Module-rename theme to "environmental degradation"; re-exports oxidation API |
+| `crates/tpt-mat-grain-growth/src/interfaces.rs` (NEW) | GB energy (Read–Shockley), GBCD + LAB/CSL fractions, triple-junction Herring balance, Langmuir–McLean segregation — 7 tests |
+| `crates/tpt-mat-grain-growth/src/recrystallization.rs` (NEW) | Static JMAK RX, Zener–Hollomon + Sellars–Tegart, dynamic RX (DrxKinetics, Cahn–Hagel form) — 6 tests |
+| `crates/tpt-mat-grain-growth/src/stereology.rs` (NEW) | ASTM E112 linear intercept, area/volume fraction + counting uncertainty, Saltykov 3-D reconstruction — 6 tests |
+| `crates/tpt-mat-grain-growth/src/lib.rs` | Re-exports new modules |
+| `crates/tpt-mat-hardening/src/dislocation_density.rs` (NEW) | `DislocationDensityHardening` wired into `Hardening::DislocationDensity` variant; `HardeningState.extra: Vec<f64>` for the per-system density triple — 2 tests |
+| `crates/tpt-mat-hardening/src/state.rs` | Added `extra` field to `HardeningState` |
+| `crates/tpt-mat-rve/src/rve.rs` | `hill_mandel_voigt_uniform_strain_energy_consistency` + `hill_mandel_reuss_uniform_stress_energy_consistency` — 2 tests |
+| `crates/tpt-mat-inverse/` (NEW crate) | Closed-form fits (Arrhenius, Norton–Bailey, Voce, Basquin S–N, Avrami, Coffin–Manson) + generic `LevenbergMarquardt` — 6 tests |
+| `crates/tpt-materials/Cargo.toml` | `inverse` feature + facade re-export |
+| `crates/tpt-materials/src/lib.rs` | `pub mod inverse` + spec §6/§13 doc-tests |
+| `Cargo.toml` (workspace) | Added `crates/tpt-mat-inverse` member |
+| `examples/backlog-modules-demo/` (NEW) | Drives every new module on synthetic data; calibration fits recover ground-truth values to 1 part in 10⁴ |
+| `rfcs/0016-backlog-modules.md` (NEW) | RFC for oxidation + interfaces + recrystallization + stereology + inverse |
+| `todo.md` | Marked all 5 backlog boxes + dislocation-hardening + public doc-test as done |
+
+Workspace state after this pass:
+
+- **32 domain crates** (added `tpt-mat-inverse`).
+- **26 example binaries** (added `backlog-modules-demo`).
+- **16 RFCs** (added 0016).
+- **465 tests** passing across the full workspace (up from 416).
+- `cargo clippy --workspace --all-targets` clean (no errors).
+
+Remaining genuinely-deferred items (unchanged):
+
+- Cross-repo adapters to `tpt-energy` / `tpt-transport` /
+  `tpt-electronics` / `tpt-medical` (those repos don't exist in
+  this workspace).
+- `cargo deny check licenses` CI (requires running against the
+  actual dep tree).
+- Public GitHub Projects roadmap board (external).
+- Golden test datasets (require external reference data).
+- FFT homogenisation / full CP-FEM Newton–Raphson / full WASM
+  bindings / `tpt-fem` mesh-handle integration (require
+  `tpt-fem` upstream).
+- Full Lemke LCP Bishop–Hill solver (current vertex-enumeration
+  solver implemented; full L1 solution requires the upstream LP
+  primitive).

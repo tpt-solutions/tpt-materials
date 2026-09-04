@@ -1,4 +1,6 @@
-//! Electrochemical corrosion models.
+//! Environmental degradation models.
+//!
+//! # Wet / electrochemical corrosion
 //!
 //! This crate implements the mixed-potential theory of corrosion
 //! following Wagner & Traud (1938) and the Butler–Volmer charge-
@@ -9,7 +11,7 @@
 //! corrosion current density `i_corr` and corrosion potential
 //! `E_corr`.
 //!
-//! # Models
+//! ## Models
 //!
 //! - [`ElectrodeKinetics`]: a single half-reaction described by its
 //!   Tafel slope `b` (V/dec), exchange current density `i_0`
@@ -20,6 +22,12 @@
 //!   current and derive a [`CorrosionRate`].
 //! - [`polarization_curve`]: scan the potential axis and return the
 //!   [`PolarizationCurve`] (anodic + cathodic branches).
+//!
+//! # High-temperature oxidation
+//!
+//! The `oxidation` module provides Wagner parabolic rate constants,
+//! Wagner–Hauffe doping corrections, breakaway-criterion
+//! predicates and the Evans parabolic-to-linear transition model.
 //!
 //! # References
 //!
@@ -35,6 +43,7 @@
 #![warn(missing_docs)]
 
 mod butler_volmer;
+mod oxidation;
 mod polarization;
 mod rate;
 
@@ -43,6 +52,10 @@ use serde::{Deserialize, Serialize};
 pub use butler_volmer::{
     butler_volmer_current, butler_volmer_current_density, tafel_anodic, tafel_cathodic,
     ElectrodeKinetics,
+};
+pub use oxidation::{
+    BreakawayCriterion, DopingEffect, LinearBreakawayRate, OxidationModel, ParabolicRateConstant,
+    ScaleGrowth,
 };
 pub use polarization::{polarization_curve, PolarizationBranch, PolarizationCurve};
 pub use rate::{

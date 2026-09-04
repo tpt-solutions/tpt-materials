@@ -11,10 +11,12 @@
 
 #![warn(missing_docs)]
 
+mod dislocation_density;
 mod latent;
 mod state;
 mod voce;
 
+pub use dislocation_density::{DislocationDensityHardening, DislocationDensityParams};
 pub use latent::LatentHardeningMatrix;
 pub use state::HardeningState;
 pub use voce::{CombinedParams, KocksMeckingParams, PowerLawParams, VoceParams};
@@ -204,6 +206,8 @@ pub enum Hardening {
     KocksMecking(KocksMeckingHardening),
     /// Combined: any self-law + latent cross-hardening matrix.
     Combined(CombinedHardening),
+    /// Dislocation-density-based hardening (Taylor + Kocks–Mecking).
+    DislocationDensity(DislocationDensityHardening),
 }
 
 impl Hardening {
@@ -220,6 +224,7 @@ impl Hardening {
             Hardening::PowerLaw(h) => h.update(state, slip_systems, delta_gamma, latent),
             Hardening::KocksMecking(h) => h.update(state, slip_systems, delta_gamma, latent),
             Hardening::Combined(h) => h.update(state, slip_systems, delta_gamma, latent),
+            Hardening::DislocationDensity(h) => h.update(state, slip_systems, delta_gamma, latent),
         }
     }
 }

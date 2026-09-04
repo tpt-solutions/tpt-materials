@@ -10,6 +10,11 @@ pub struct HardeningState {
     pub crss: Vec<f64>,
     /// Accumulated shear `γ^α` per slip system.
     pub accumulated_shear: Vec<f64>,
+    /// Optional per-slip-system extra state (e.g. dislocation-
+    /// density triples `[ρ_SSD, ρ_GND, ρ_forest]`).  Empty by
+    /// default; laws needing per-system state set it.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub extra: Vec<f64>,
 }
 
 impl HardeningState {
@@ -22,6 +27,7 @@ impl HardeningState {
         Self {
             crss,
             accumulated_shear: vec![0.0; slip_systems.len()],
+            extra: Vec::new(),
         }
     }
 
@@ -31,6 +37,7 @@ impl HardeningState {
         Self {
             crss,
             accumulated_shear,
+            extra: Vec::new(),
         }
     }
 

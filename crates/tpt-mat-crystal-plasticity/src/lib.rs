@@ -24,6 +24,7 @@
 
 mod elastic;
 mod fem;
+mod fem_assembly;
 mod flow;
 mod model;
 mod state;
@@ -33,6 +34,7 @@ pub use fem::{
     solve_increment_single_point, BoundaryConditions, CpFemResult, CpFemSolver, FemError, LoadStep,
     ReactionForce, StressUpdate,
 };
+pub use fem_assembly::{CpFemAssembly, CpFemAssemblyError, Hex8, Mesh};
 pub use flow::{power_law_slip_rate, viscoplastic_velocity_gradient, PlasticIncrement};
 pub use model::{CrystalPlasticityModel, RateSensitivity};
 pub use state::SingleCrystalState;

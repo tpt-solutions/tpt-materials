@@ -34,11 +34,14 @@
 #![warn(missing_docs)]
 
 mod bishop_hill;
+mod lemke;
 mod rve;
 
 pub use bishop_hill::{
-    bishop_hill_taylor_factor, bishop_hill_taylor_factor_axis, BishopHillResult,
+    bishop_hill_lemke, bishop_hill_lemke_with_slips, bishop_hill_taylor_factor,
+    bishop_hill_taylor_factor_axis, BishopHillResult,
 };
+pub use lemke::{lemke_solve, LemkeResult};
 pub use rve::{HomogenizationScheme, Rve, RveGrain, RveStats, SimpleHomogenizer};
 
 pub use tpt_mat_homogenization as homogenization;

@@ -39,6 +39,7 @@ members = [
     "crates/tpt-mat-hydrogel",
     "crates/tpt-mat-hydrogen-storage",
     "crates/tpt-mat-wasm",
+    "crates/tpt-mat-inverse",
     "crates/tpt-materials",
     "examples/fcc-single-crystal-tension",
     "examples/spinodal-decomposition",
@@ -65,6 +66,7 @@ members = [
     "examples/dislocation-density-tension",
     "examples/hydrogen-embrittlement-notch",
     "examples/micro-to-macro-pipeline",
+    "examples/backlog-modules-demo",
 ]
 
 [workspace.package]

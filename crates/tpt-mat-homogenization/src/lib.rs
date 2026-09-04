@@ -38,6 +38,7 @@
 
 mod bounds;
 mod eshelby;
+mod fft;
 mod hashin_shtrikman;
 mod voigt_reuss;
 
@@ -45,5 +46,6 @@ pub use bounds::{voigt_reuss_bounds, VoigtReussBounds};
 pub use eshelby::{
     dilute_strain_concentration, eshelby_spherical, EshelbySpherical, StrainConcentrationTensor,
 };
+pub use fft::{fft2d, moulinec_suquet_2d};
 pub use hashin_shtrikman::{hashin_shtrikman_two_phase, HashinShtrikmanResult};
 pub use voigt_reuss::{g_from_e_nu, k_from_e_nu, reuss, voigt, voigt_reuss_average};

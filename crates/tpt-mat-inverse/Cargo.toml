@@ -1,6 +1,6 @@
 [package]
-name = "tpt-mat-hardening"
-description = "Slip-system hardening laws for crystal plasticity (Voce, power-law, Kocks-Mecking, latent-hardening matrix)"
+name = "tpt-mat-inverse"
+description = "Closed-form inverse/calibration helpers for fitting constitutive-model parameters to experimental curves"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -17,11 +17,7 @@ authors.workspace = true
 workspace = true
 
 [dependencies]
-tpt-math-linalg-fixed = { path = "../tpt-math-linalg-fixed", version = "0.1" }
-tpt-mat-crystallography = { path = "../tpt-mat-crystallography", version = "0.1" }
-tpt-mat-dislocation = { path = "../tpt-mat-dislocation", version = "0.1" }
 serde = { workspace = true }
-serde_json = { workspace = true }
 thiserror = { workspace = true }
 
 [dev-dependencies]

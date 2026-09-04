@@ -428,4 +428,70 @@ mod tests {
         assert!((s.total_volume_fraction - 1.0).abs() < 1e-12);
         assert_eq!(s.unique_orientations, 1);
     }
+
+    #[test]
+    fn hill_mandel_voigt_uniform_strain_energy_consistency() {
+        // Hill–Mandel macro-homogeneity for a uniform-strain
+        // (Voigt) boundary: the macroscopic stress-energy
+        // `<Sigma> : E` recovered from the homogenised stiffness
+        // must equal the volume-averaged strain-energy
+        // `<sigma : eps>` where each grain carries the same E.
+        let c_a = SymmetricFourthOrder::isotropic(70_000.0, 0.33);
+        let c_b = SymmetricFourthOrder::isotropic(200_000.0, 0.3);
+        let rve = Rve::new(vec![
+            RveGrain::new("a", 0.3, identity(), c_a.clone()),
+            RveGrain::new("b", 0.7, identity(), c_b.clone()),
+        ]);
+        let c_avg = rve.homogenize(HomogenizationScheme::Voigt);
+        let e = Vec6::new(1.0e-3, -0.5e-3, 0.0, 0.0, 0.0, 0.5e-3);
+        let sigma_avg = c_avg.contract(e);
+        let sigma_a = c_a.contract(e);
+        let sigma_b = c_b.contract(e);
+        let macro_energy = sigma_avg.double_dot(e);
+        let micro_energy = 0.3 * sigma_a.double_dot(e) + 0.7 * sigma_b.double_dot(e);
+        let rel = (macro_energy - micro_energy).abs() / macro_energy.abs().max(1e-30);
+        assert!(
+            rel < 1.0e-12,
+            "Hill–Mandel macro/micro energy mismatch: {rel:.3e}"
+        );
+    }
+
+    #[test]
+    fn hill_mandel_reuss_uniform_stress_energy_consistency() {
+        // For Reuss (uniform-stress), the homogenised compliance
+        // `S = <S^g>` yields macroscopic strain `E = S : Sigma`
+        // for any applied stress Sigma.  The energy consistency
+        // `<Sigma : E> = <Sigma : eps^g>` holds with all grains
+        // seeing the same Sigma.
+        let c_a = SymmetricFourthOrder::isotropic(70_000.0, 0.33);
+        let c_b = SymmetricFourthOrder::isotropic(200_000.0, 0.3);
+        let phases = vec![(c_a.clone(), 0.3), (c_b.clone(), 0.7)];
+        let s_avg = tpt_mat_homogenization::reuss(&phases);
+        let s_a = c_a.compliance();
+        let s_b = c_b.compliance();
+        let sigma = Vec6::new(100.0, -50.0, 0.0, 0.0, 0.0, 25.0);
+        let e_avg = apply_compliance(s_avg, sigma);
+        let e_a = apply_compliance(s_a, sigma);
+        let e_b = apply_compliance(s_b, sigma);
+        let macro_energy = sigma.double_dot(e_avg);
+        let micro_energy =
+            sigma.double_dot(e_a.scale(0.3) + e_b.scale(0.7));
+        let rel = (macro_energy - micro_energy).abs() / macro_energy.abs().max(1e-30);
+        assert!(
+            rel < 1.0e-9,
+            "Reuss Hill–Mandel mismatch: {rel:.3e}"
+        );
+    }
+}
+
+fn apply_compliance(s: [[f64; 6]; 6], v: Vec6) -> Vec6 {
+    let mut out = [0.0_f64; 6];
+    for i in 0..6 {
+        let mut acc = 0.0;
+        for j in 0..6 {
+            acc += s[i][j] * v.data[j];
+        }
+        out[i] = acc;
+    }
+    Vec6::new(out[0], out[1], out[2], out[3], out[4], out[5])
 }
