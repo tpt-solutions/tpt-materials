@@ -9,8 +9,8 @@ repository.workspace = true
 homepage.workspace = true
 documentation.workspace = true
 readme.workspace = true
-keywords.workspace = true
-categories.workspace = true
+keywords = ["testing", "assertions", "floating-point", "materials-science"]
+categories = ["development-tools::testing", "science"]
 authors.workspace = true
 
 [lints]

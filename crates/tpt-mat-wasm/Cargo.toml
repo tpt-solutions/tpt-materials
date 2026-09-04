@@ -9,8 +9,8 @@ repository.workspace = true
 homepage.workspace = true
 documentation.workspace = true
 readme.workspace = true
-keywords.workspace = true
-categories.workspace = true
+keywords = ["wasm", "webassembly", "rve", "phase-field", "browser"]
+categories = ["wasm", "science"]
 authors.workspace = true
 
 [lints]

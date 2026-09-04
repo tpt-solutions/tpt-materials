@@ -9,8 +9,8 @@ repository.workspace = true
 homepage.workspace = true
 documentation.workspace = true
 readme.workspace = true
-keywords.workspace = true
-categories.workspace = true
+keywords = ["phase-transform", "avrami", "jmk", "koistinen-marburger", "ttt-diagram"]
+categories = ["science", "simulation"]
 authors.workspace = true
 
 [lints]

@@ -9,8 +9,8 @@ repository.workspace = true
 homepage.workspace = true
 documentation.workspace = true
 readme.workspace = true
-keywords.workspace = true
-categories.workspace = true
+keywords = ["physical-constants", "periodic-table", "materials-science"]
+categories = ["science", "data-structures"]
 authors.workspace = true
 
 [lints]

@@ -9,8 +9,8 @@ repository.workspace = true
 homepage.workspace = true
 documentation.workspace = true
 readme.workspace = true
-keywords.workspace = true
-categories.workspace = true
+keywords = ["composite", "mori-tanaka", "benveniste", "inclusion", "micromechanics"]
+categories = ["science", "simulation"]
 authors.workspace = true
 
 [lints]

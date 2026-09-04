@@ -9,8 +9,8 @@ repository.workspace = true
 homepage.workspace = true
 documentation.workspace = true
 readme.workspace = true
-keywords.workspace = true
-categories.workspace = true
+keywords = ["fracture-mechanics", "stress-intensity", "phase-field-fracture", "cohesive-zone", "dbtt"]
+categories = ["science", "simulation"]
 authors.workspace = true
 
 [lints]

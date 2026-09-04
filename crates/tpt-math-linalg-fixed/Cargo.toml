@@ -9,8 +9,8 @@ repository.workspace = true
 homepage.workspace = true
 documentation.workspace = true
 readme.workspace = true
-keywords.workspace = true
-categories.workspace = true
+keywords = ["linear-algebra", "matrix", "tensor", "voigt-notation", "no-std"]
+categories = ["science::mathematics", "no-std::no-alloc"]
 authors.workspace = true
 
 [lints]

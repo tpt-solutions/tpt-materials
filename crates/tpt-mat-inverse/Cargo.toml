@@ -9,8 +9,8 @@ repository.workspace = true
 homepage.workspace = true
 documentation.workspace = true
 readme.workspace = true
-keywords.workspace = true
-categories.workspace = true
+keywords = ["calibration", "levenberg-marquardt", "curve-fit", "inverse-problem", "parameter-estimation"]
+categories = ["science", "mathematics::numerical-analysis"]
 authors.workspace = true
 
 [lints]
