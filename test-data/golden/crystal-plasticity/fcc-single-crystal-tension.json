@@ -3,58 +3,58 @@
     {
       "eps_11": 0.001,
       "sigma_11": 168400000.0,
-      "sum_abs_slip_rates": 3.66045137296242e+143,
-      "sum_accumulated_shear": -1.83022568648121e+143,
-      "mean_crss": null
+      "sum_abs_slip_rates": 1.049807201131394e-6,
+      "sum_accumulated_shear": 1.049807201131394e-6,
+      "mean_crss": 30000096.232257888
     },
     {
       "eps_11": 0.002,
       "sigma_11": 336800000.0,
-      "sum_abs_slip_rates": null,
-      "sum_accumulated_shear": null,
-      "mean_crss": null
+      "sum_abs_slip_rates": 2.2013934167243296,
+      "sum_accumulated_shear": 2.201394466531531,
+      "mean_crss": 141643318.45724094
     },
     {
       "eps_11": 0.003,
       "sigma_11": 505200000.0,
-      "sum_abs_slip_rates": null,
-      "sum_accumulated_shear": null,
-      "mean_crss": null
+      "sum_abs_slip_rates": 4.712804031657909e-13,
+      "sum_accumulated_shear": 2.2013944665320015,
+      "mean_crss": 141643318.45726064
     },
     {
       "eps_11": 0.004,
       "sigma_11": 673600000.0,
-      "sum_abs_slip_rates": null,
-      "sum_accumulated_shear": null,
-      "mean_crss": null
+      "sum_abs_slip_rates": 1.981494403357579e-10,
+      "sum_accumulated_shear": 2.2013944667301515,
+      "mean_crss": 141643318.46555725
     },
     {
       "eps_11": 0.005,
       "sigma_11": 842000000.0,
-      "sum_abs_slip_rates": null,
-      "sum_accumulated_shear": null,
-      "mean_crss": null
+      "sum_abs_slip_rates": 2.1483405341802704e-8,
+      "sum_accumulated_shear": 2.2013944882135568,
+      "mean_crss": 141643319.36507377
     },
     {
       "eps_11": 0.006,
       "sigma_11": 1010400000.0,
-      "sum_abs_slip_rates": null,
-      "sum_accumulated_shear": null,
-      "mean_crss": null
+      "sum_abs_slip_rates": 9.883465037441086e-7,
+      "sum_accumulated_shear": 2.2013954765600605,
+      "mean_crss": 141643360.74743226
     },
     {
       "eps_11": 0.007,
       "sigma_11": 1178800000.0,
-      "sum_abs_slip_rates": null,
-      "sum_accumulated_shear": null,
-      "mean_crss": null
+      "sum_abs_slip_rates": 0.00002516454498755884,
+      "sum_accumulated_shear": 2.2014206411050483,
+      "mean_crss": 141644414.3941582
     },
     {
       "eps_11": 0.008,
       "sigma_11": 1347200000.0,
-      "sum_abs_slip_rates": null,
-      "sum_accumulated_shear": null,
-      "mean_crss": null
+      "sum_abs_slip_rates": 0.00041548031175983504,
+      "sum_accumulated_shear": 2.201836121416808,
+      "mean_crss": 141661810.62755635
     }
   ]
 }

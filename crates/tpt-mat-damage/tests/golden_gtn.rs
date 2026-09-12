@@ -30,11 +30,7 @@ fn gtn_void_growth_golden() {
     let mut f = v["f_initial"].as_f64().unwrap();
     for (i, stored) in v["f_trajectory"].as_array().unwrap().iter().enumerate() {
         f = update_porosity(f, 0.01, 0.05, &params);
-        close(
-            &format!("f_trajectory[{i}]"),
-            f,
-            stored.as_f64().unwrap(),
-        );
+        close(&format!("f_trajectory[{i}]"), f, stored.as_f64().unwrap());
     }
     for point in v["yield_grid"].as_array().unwrap() {
         let seq = point["sigma_eq_over_y"].as_f64().unwrap();
@@ -56,5 +52,5 @@ fn gtn_void_growth_golden() {
         .map(|x| x.as_f64().unwrap())
         .collect();
     assert!(traj.windows(2).all(|w| w[1] > w[0]), "porosity must grow");
-    assert!(traj.last().unwrap() < 1.0, "porosity must stay < 1");
+    assert!(*traj.last().unwrap() < 1.0, "porosity must stay < 1");
 }

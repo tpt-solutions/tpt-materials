@@ -19,6 +19,7 @@ workspace = true
 
 [dependencies]
 tpt-mat-battery = { path = "../../crates/tpt-mat-battery", version = "0.1" }
+tpt-mat-corrosion = { path = "../../crates/tpt-mat-corrosion", version = "0.1" }
 tpt-mat-crystal-plasticity = { path = "../../crates/tpt-mat-crystal-plasticity", version = "0.1" }
 tpt-mat-crystallography = { path = "../../crates/tpt-mat-crystallography", version = "0.1" }
 tpt-mat-damage = { path = "../../crates/tpt-mat-damage", version = "0.1" }

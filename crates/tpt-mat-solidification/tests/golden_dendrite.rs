@@ -4,7 +4,7 @@
 use serde_json::Value;
 
 use tpt_mat_phase_field::BulkEnergy;
-use tpt_mat_solidification::{AnisotropyModel, AnisotropyMode, SolidificationSolver};
+use tpt_mat_solidification::{AnisotropyMode, AnisotropyModel, SolidificationSolver};
 use tpt_science::Grid2D;
 
 fn golden() -> Value {
@@ -70,7 +70,11 @@ fn dendritic_solidification_golden() {
         snap.solid_fraction,
         v["solid_fraction_final"].as_f64().unwrap(),
     );
-    close("tip_velocity", snap.tip_velocity, v["tip_velocity"].as_f64().unwrap());
+    close(
+        "tip_velocity",
+        snap.tip_velocity,
+        v["tip_velocity"].as_f64().unwrap(),
+    );
     close(
         "primary_arm_spacing",
         snap.primary_arm_spacing,

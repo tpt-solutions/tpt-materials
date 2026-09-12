@@ -151,7 +151,11 @@ impl CpFemAssembly {
     /// Construct a single-material assembly over the given mesh.
     pub fn new(mesh: Mesh, material: CrystalPlasticityModel) -> Self {
         let n_gauss = mesh.elements.len() * 8;
-        let hardening_state = vec![HardeningState::from_crss(&material.slip_systems); n_gauss];
+        let hardening_state =
+            vec![
+                HardeningState::from_hardening(&material.slip_systems, &material.hardening_law);
+                n_gauss
+            ];
         let u = vec![0.0; mesh.n_dof()];
         Self {
             mesh,
@@ -263,7 +267,12 @@ impl CpFemAssembly {
                     .hardening_state
                     .get(gp_global)
                     .cloned()
-                    .unwrap_or_else(|| HardeningState::from_crss(&self.material.slip_systems));
+                    .unwrap_or_else(|| {
+                        HardeningState::from_hardening(
+                            &self.material.slip_systems,
+                            &self.material.hardening_law,
+                        )
+                    });
                 let mut model = self.material.clone();
                 let eps_inc = tpt_math_linalg_fixed::Vec6::new(
                     strain[0], strain[1], strain[2], strain[3], strain[4], strain[5],
@@ -349,7 +358,12 @@ impl CpFemAssembly {
                     .hardening_state
                     .get(gp_global)
                     .cloned()
-                    .unwrap_or_else(|| HardeningState::from_crss(&self.material.slip_systems));
+                    .unwrap_or_else(|| {
+                        HardeningState::from_hardening(
+                            &self.material.slip_systems,
+                            &self.material.hardening_law,
+                        )
+                    });
                 let mut model = self.material.clone();
                 let eps_inc = tpt_math_linalg_fixed::Vec6::new(
                     strain[0], strain[1], strain[2], strain[3], strain[4], strain[5],

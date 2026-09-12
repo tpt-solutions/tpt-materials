@@ -169,7 +169,7 @@ impl CpFemSolver {
     ) -> Self {
         let hardening_state = material
             .iter()
-            .map(|m| HardeningState::from_crss(&m.slip_systems))
+            .map(|m| HardeningState::from_hardening(&m.slip_systems, &m.hardening_law))
             .collect();
         Self {
             mesh,
@@ -305,7 +305,7 @@ mod tests {
     fn single_point_zero_strain_yields_zero_plastic_flow() {
         let model = fcc_model();
         let slips = model.slip_systems.clone();
-        let mut state = HardeningState::from_crss(&slips);
+        let mut state = HardeningState::from_hardening(&slips, &model.hardening_law);
         let eps = Vec6::ZERO;
         let upd = solve_increment_single_point(&model, &mut state, &eps).unwrap();
         for g in &upd.slip_rates {
@@ -318,7 +318,7 @@ mod tests {
     fn single_point_uniaxial_yields_positive_slip_on_fcc() {
         let model = fcc_model();
         let slips = model.slip_systems.clone();
-        let mut state = HardeningState::from_crss(&slips);
+        let mut state = HardeningState::from_hardening(&slips, &model.hardening_law);
         let eps = LoadStep::uniaxial(0, 0.001).strain_increment;
         let upd = solve_increment_single_point(&model, &mut state, &eps).unwrap();
         assert!(upd.slip_rates.iter().any(|g| *g > 0.0));

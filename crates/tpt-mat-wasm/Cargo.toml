@@ -1,6 +1,6 @@
 [package]
 name = "tpt-mat-wasm"
-description = "WebAssembly bindings for tpt-materials (scaffold; full bindings in Phase 8)"
+description = "WebAssembly bindings for tpt-materials (WasmRveSolver + WasmPhaseField, Phase 8)"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -18,9 +18,13 @@ workspace = true
 
 [dependencies]
 tpt-math-linalg-fixed = { path = "../tpt-math-linalg-fixed", version = "0.1" }
+tpt-science = { path = "../tpt-science", version = "0.1" }
 tpt-mat-core = { path = "../tpt-mat-core", version = "0.1" }
 tpt-mat-constants = { path = "../tpt-mat-constants", version = "0.1" }
 tpt-mat-crystallography = { path = "../tpt-mat-crystallography", version = "0.1" }
+tpt-mat-crystal-plasticity = { path = "../tpt-mat-crystal-plasticity", version = "0.1" }
+tpt-mat-phase-field = { path = "../tpt-mat-phase-field", version = "0.1" }
+tpt-mat-rve = { path = "../tpt-mat-rve", version = "0.1" }
 serde = { workspace = true }
 serde_json = { workspace = true }
 wasm-bindgen = { workspace = true }

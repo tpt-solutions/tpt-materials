@@ -46,7 +46,7 @@ fn fcc_single_crystal_tension_golden() {
         elastic,
     )
     .unwrap();
-    let mut state = HardeningState::from_crss(&model.slip_systems);
+    let mut state = HardeningState::from_hardening(&model.slip_systems, &model.hardening_law);
     let steps = v["steps"].as_array().unwrap();
     for (i, step) in steps.iter().enumerate() {
         let k = i + 1;

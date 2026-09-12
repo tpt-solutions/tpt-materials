@@ -31,6 +31,27 @@ impl HardeningState {
         }
     }
 
+    /// Initialise from a hardening law: laws that define an explicit
+    /// base CRSS (`tau_0`) seed every slip system with it; laws that
+    /// are purely incremental fall back to the per-slip-system value.
+    pub fn from_hardening(
+        slip_systems: &[tpt_mat_crystallography::SlipSystem],
+        hardening: &crate::Hardening,
+    ) -> Self {
+        let crss: Vec<f64> = match hardening.base_crss() {
+            Some(tau_0) => vec![tau_0; slip_systems.len()],
+            None => slip_systems
+                .iter()
+                .map(|s| s.critical_resolved_shear_stress)
+                .collect(),
+        };
+        Self {
+            crss,
+            accumulated_shear: vec![0.0; slip_systems.len()],
+            extra: Vec::new(),
+        }
+    }
+
     /// Construct with explicit CRSS and accumulated-shear vectors.
     pub fn new(crss: Vec<f64>, accumulated_shear: Vec<f64>) -> Self {
         debug_assert_eq!(crss.len(), accumulated_shear.len());

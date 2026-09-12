@@ -137,8 +137,12 @@ fn eshelby_6x6(s: EshelbySpherical) -> [[f64; 6]; 6] {
     let mut m = [[0.0_f64; 6]; 6];
     for i in 0..3 {
         for j in 0..3 {
-            let hydro = if i == j { 1.0 / 3.0 } else { 0.0 };
-            let dev = if i == j { 2.0 / 3.0 } else { 0.0 };
+            // Spherical Eshelby tensor in Voigt order, from the
+            // isotropic projections.  In pure-tensor index form:
+            //   S_1111 = S_h/3 + 2 S_d/3
+            //   S_1122 = S_h/3 -     S_d/3
+            let hydro = 1.0 / 3.0;
+            let dev = if i == j { 2.0 / 3.0 } else { -1.0 / 3.0 };
             m[i][j] = s.s_hydro * hydro + s.s_dev * dev;
         }
     }
@@ -147,7 +151,10 @@ fn eshelby_6x6(s: EshelbySpherical) -> [[f64; 6]; 6] {
         m[i][3 + 0] = 0.0;
     }
     for k in 3..6 {
-        m[k][k] = s.s_dev * 2.0; // engineering-shear weight: 1/2 factor absorbed
+        // Engineering-shear weight: for engineering shear gamma = 2 eps
+        // the tensor entry S_1212 = (4-5nu)/(15(1-nu)) = s_dev/2 acts on
+        // the engineering shear strain directly.
+        m[k][k] = s.s_dev / 2.0;
     }
     m
 }
@@ -226,6 +233,58 @@ fn inv6(m: [[f64; 6]; 6]) -> [[f64; 6]; 6] {
 mod tests {
     use super::*;
     use tpt_testkit::assert_relative_eq;
+
+    #[test]
+    fn eshelby_6x6_sphere_matches_analytic_voigt_entries() {
+        // Analytic entries (isotropic matrix, sphere), pure-tensor
+        // Voigt form with engineering-shear weight for the shear block:
+        //   S_1111 = (7-5ν)/(15(1-ν))
+        //   S_1122 = (5ν-1)/(15(1-ν))
+        //   S_1212 = (4-5ν)/(15(1-ν))
+        let nu = 0.3;
+        let sphere = EshelbySpherical::from_nu(nu);
+        let m = super::eshelby_6x6(sphere);
+        let denom = 15.0 * (1.0 - nu);
+        let s11 = (7.0 - 5.0 * nu) / denom;
+        let s12 = (5.0 * nu - 1.0) / denom;
+        let s44 = (4.0 - 5.0 * nu) / denom;
+        assert!((m[0][0] - s11).abs() < 1e-12);
+        assert!((m[0][1] - s12).abs() < 1e-12);
+        assert!((m[1][2] - s12).abs() < 1e-12);
+        assert!((m[3][3] - s44).abs() < 1e-12);
+        assert!((m[4][4] - s44).abs() < 1e-12);
+        assert!((m[5][5] - s44).abs() < 1e-12);
+        // Hydrostatic projection: S applied to a volumetric eigenstrain
+        // must reproduce the trace contraction (s_hydro).
+        let sh = sphere.s_hydro;
+        let trace: f64 = m[0][0] + m[0][1] + m[0][2];
+        assert!((trace - sh).abs() < 1e-12);
+    }
+
+    #[test]
+    fn dilute_strain_concentration_isotropic_matches_analytic() {
+        // For an isotropic inclusion in an isotropic matrix the dilute
+        // (Mori–Tanaka, c → 0) concentration of a volumetric strain is
+        //   A_hydro = (K0 + 4G0/3) / (K1 + 4G0/3).
+        let e0 = 200_000.0;
+        let nu0 = 0.3;
+        let k0 = e0 / (3.0 * (1.0 - 2.0 * nu0));
+        let g0 = e0 / (2.0 * (1.0 + nu0));
+        let e1 = 400_000.0;
+        let k1 = e1 / (3.0 * (1.0 - 2.0 * 0.25));
+        let c0 = SymmetricFourthOrder::isotropic(e0, nu0);
+        let c1 = SymmetricFourthOrder::isotropic(e1, 0.25);
+        let s = EshelbySpherical::from_nu(nu0);
+        let a = dilute_strain_concentration(&c0, &c1, s);
+        let eps_inf = Vec6::new(1.0, 1.0, 1.0, 0.0, 0.0, 0.0);
+        let eps_inc = a.apply(eps_inf);
+        let expected = (k0 + 4.0 * g0 / 3.0) / (k1 + 4.0 * g0 / 3.0);
+        let vol_ratio = (eps_inc[0] + eps_inc[1] + eps_inc[2]) / 3.0;
+        assert!(
+            (vol_ratio - expected).abs() < 1e-9,
+            "hydrostatic concentration {vol_ratio} != analytic {expected}"
+        );
+    }
 
     #[test]
     fn eshelby_spherical_zero_inclusion_stiffness_gives_unity_concentration() {

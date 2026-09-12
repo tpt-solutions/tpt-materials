@@ -42,7 +42,10 @@ fn spinodal_decomposition_golden() {
         0.001,
         1.0,
         1.0,
-        BulkEnergy::RegularSolution(RegularSolutionParams { omega: 4.0, rt: 1.0 }),
+        BulkEnergy::RegularSolution(RegularSolutionParams {
+            omega: 4.0,
+            rt: 1.0,
+        }),
         &c,
     )
     .unwrap();
@@ -54,8 +57,16 @@ fn spinodal_decomposition_golden() {
     );
     solver.step_many(n_steps).unwrap();
     let snap = solver.snapshot();
-    close("energy_initial", snap0.free_energy, v["energy_initial"].as_f64().unwrap());
-    close("energy_final", snap.free_energy, v["energy_final"].as_f64().unwrap());
+    close(
+        "energy_initial",
+        snap0.free_energy,
+        v["energy_initial"].as_f64().unwrap(),
+    );
+    close(
+        "energy_final",
+        snap.free_energy,
+        v["energy_final"].as_f64().unwrap(),
+    );
     close(
         "interface_area_initial",
         snap0.interface_area,

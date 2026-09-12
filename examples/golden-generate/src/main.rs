@@ -12,6 +12,9 @@ use std::path::{Path, PathBuf};
 use serde::Serialize;
 
 use tpt_mat_battery::{capacity_fade_curve, default_active_material, BatteryChemistry};
+use tpt_mat_corrosion::{
+    corrosion_rate, polarization_curve, CorrosionModel, ElectrodeKinetics, PolarizationBranch,
+};
 use tpt_mat_crystal_plasticity::{
     solve_increment_single_point, CrystalPlasticityModel, SymmetricFourthOrder,
 };
@@ -21,7 +24,7 @@ use tpt_mat_fatigue_micro::{predict_crack_initiation, FatigueCriterion};
 use tpt_mat_hardening::{Hardening, HardeningState, VoceHardening, VoceParams};
 use tpt_mat_phase_field::{BulkEnergy, PhaseFieldSolver, RegularSolutionParams};
 use tpt_mat_rve::bishop_hill_taylor_factor_axis;
-use tpt_mat_solidification::{AnisotropyModel, AnisotropyMode, SolidificationSolver};
+use tpt_mat_solidification::{AnisotropyMode, AnisotropyModel, SolidificationSolver};
 use tpt_science::Grid2D;
 
 /// Workspace `test-data/golden` directory (this example lives in
@@ -164,7 +167,7 @@ fn cp_tension_dataset() -> CpTensionFile {
         elastic,
     )
     .unwrap();
-    let mut state = HardeningState::from_crss(&model.slip_systems);
+    let mut state = HardeningState::from_hardening(&model.slip_systems, &model.hardening_law);
     let mut steps = Vec::with_capacity(8);
     for k in 1..=8 {
         let eps_inc = tpt_math_linalg_fixed::Vec6::new(0.001 * k as f64, 0.0, 0.0, 0.0, 0.0, 0.0);
@@ -212,7 +215,10 @@ fn spinodal_dataset() -> SpinodalFile {
         0.001,
         1.0,
         1.0,
-        BulkEnergy::RegularSolution(RegularSolutionParams { omega: 4.0, rt: 1.0 }),
+        BulkEnergy::RegularSolution(RegularSolutionParams {
+            omega: 4.0,
+            rt: 1.0,
+        }),
         &c,
     )
     .unwrap();
@@ -438,6 +444,99 @@ fn battery_dataset() -> BatteryFile {
     }
 }
 
+#[derive(Serialize)]
+#[serde(rename_all = "snake_case")]
+struct ElectrodeGolden {
+    equilibrium_potential: f64,
+    exchange_current_density: f64,
+    alpha_a: f64,
+    alpha_c: f64,
+    n: f64,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "snake_case")]
+struct CorrosionRateGolden {
+    current_density: f64,
+    corrosion_potential: f64,
+    penetration_rate_mm_per_yr: f64,
+    mass_loss_rate_g_per_m2_day: f64,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "snake_case")]
+struct PolarizationGolden {
+    e_min: f64,
+    e_max: f64,
+    num_points: usize,
+    potentials: Vec<f64>,
+    currents: Vec<f64>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "snake_case")]
+struct CorrosionFile {
+    system: String,
+    ph: f64,
+    temperature_k: f64,
+    anode: ElectrodeGolden,
+    cathode: ElectrodeGolden,
+    corrosion_fe: CorrosionRateGolden,
+    corrosion_ti: CorrosionRateGolden,
+    polarization: PolarizationGolden,
+}
+
+fn electrode_golden(e_eq: f64, i_0: f64, alpha_a: f64, alpha_c: f64, n: f64) -> ElectrodeGolden {
+    ElectrodeGolden {
+        equilibrium_potential: e_eq,
+        exchange_current_density: i_0,
+        alpha_a,
+        alpha_c,
+        n,
+    }
+}
+
+fn corrosion_dataset() -> CorrosionFile {
+    // Fe → Fe²⁺ + 2e⁻  vs  H₂ evolution, pH 0, 298 K (example default).
+    let fe_anode = ElectrodeKinetics::from_alphas(-0.44, 1.0e-3, 0.5, 0.5, 2.0, 298.0);
+    let h2_cathode = ElectrodeKinetics::from_alphas(0.0, 1.0e-1, 0.5, 0.5, 2.0, 298.0);
+    let fe_model = CorrosionModel::new(fe_anode, h2_cathode, 0.0, 298.0);
+    let cr_fe = corrosion_rate(&fe_model, 0.055_845, 2.0, 7874.0);
+
+    let ti_anode = ElectrodeKinetics::from_alphas(-0.86, 1.0e-7, 0.5, 0.5, 3.0, 298.0);
+    let ti_model = CorrosionModel::new(ti_anode, h2_cathode, 0.0, 298.0);
+    let cr_ti = corrosion_rate(&ti_model, 0.047_867, 3.0, 4506.0);
+
+    let pc = polarization_curve(&fe_model, (-0.6, 0.2), 33, PolarizationBranch::Net);
+
+    CorrosionFile {
+        system: "Fe / H2 (pH 0, 298 K)".to_string(),
+        ph: 0.0,
+        temperature_k: 298.0,
+        anode: electrode_golden(-0.44, 1.0e-3, 0.5, 0.5, 2.0),
+        cathode: electrode_golden(0.0, 1.0e-1, 0.5, 0.5, 2.0),
+        corrosion_fe: CorrosionRateGolden {
+            current_density: cr_fe.current_density,
+            corrosion_potential: cr_fe.corrosion_potential,
+            penetration_rate_mm_per_yr: cr_fe.penetration_rate_mm_per_yr,
+            mass_loss_rate_g_per_m2_day: cr_fe.mass_loss_rate_g_per_m2_day,
+        },
+        corrosion_ti: CorrosionRateGolden {
+            current_density: cr_ti.current_density,
+            corrosion_potential: cr_ti.corrosion_potential,
+            penetration_rate_mm_per_yr: cr_ti.penetration_rate_mm_per_yr,
+            mass_loss_rate_g_per_m2_day: cr_ti.mass_loss_rate_g_per_m2_day,
+        },
+        polarization: PolarizationGolden {
+            e_min: -0.6,
+            e_max: 0.2,
+            num_points: pc.potentials.len(),
+            potentials: pc.potentials,
+            currents: pc.currents,
+        },
+    }
+}
+
 // ---------------------------------------------------------------------
 
 fn main() {
@@ -454,10 +553,26 @@ fn main() {
         "crystal-plasticity/fcc-single-crystal-tension.json",
         &cp_tension_dataset(),
     );
-    write_json("phase-field/spinodal-decomposition.json", &spinodal_dataset());
-    write_json("phase-field/dendritic-solidification.json", &dendrite_dataset());
+    write_json(
+        "phase-field/spinodal-decomposition.json",
+        &spinodal_dataset(),
+    );
+    write_json(
+        "phase-field/dendritic-solidification.json",
+        &dendrite_dataset(),
+    );
     write_json("degradation/gtn-void-growth.json", &gtn_dataset());
-    write_json("degradation/fatigue-crack-initiation.json", &fatigue_dataset());
-    write_json("energy-materials/battery-degradation.json", &battery_dataset());
+    write_json(
+        "degradation/fatigue-crack-initiation.json",
+        &fatigue_dataset(),
+    );
+    write_json(
+        "energy-materials/battery-degradation.json",
+        &battery_dataset(),
+    );
+    write_json(
+        "energy-materials/corrosion-polarization.json",
+        &corrosion_dataset(),
+    );
     println!("golden datasets regenerated");
 }

@@ -2,22 +2,24 @@
 
 Organization: **TPT Solutions** · License: **MIT OR Apache-2.0** (dual)
 
-> **Status snapshot — 2026-09-10 (fourth pass).**  Phases 1–10
+> **Status snapshot — 2026-09-12.**  Phases 1–10
 > are now all implemented (see session summaries at the end).
-> Completed this pass: the exact Bishop–Hill / LCP Taylor-factor
-> solver (random FCC `M ≈ 3.06` recovered), the Phase-2 CP-FEM
-> assembly + Newton–Raphson, FFT homogenisation (Moulinec–Suquet),
-> the end-to-end Hill–Mandel verification test, the spec §6/§13
-> doc-tests, and the `cargo deny` CI job (checked green locally).
-> Also fixed a data bug: FCC/BCC slip systems were built from a
-> shared direction list, leaving 6 of 12 systems with `s·n ≠ 0`;
-> directions are now selected programmatically per plane.
-> Remaining genuinely deferred items: golden test datasets,
-> public roadmap board, full WASM bindings, and the five
-> cross-repo output adapters (tpt-energy / transport /
-> electronics / medical).  Backlog modules (oxidation, GBs,
-> recrystallisation, stereology, inverse calibration) are
-> documented at the bottom.
+> Completed this pass: golden test datasets for
+> fatigue / corrosion / AM / battery / phase-field / Taylor-factor /
+> single-crystal (via `examples/golden-generate`, checked into
+> `test-data/golden/`), the WASM Phase-8 bindings
+> (`WasmRveSolver` + `WasmPhaseField`) with a wasm32 CI build job,
+> and the in-repo `adapters` module covering all four spec §6
+> cross-repo output adapters.  Also fixed three real physics bugs in
+> the RVE/homogenization path: the Eshelby 6×6 tensor (missing
+> normal off-diagonals + wrong shear entries), an undamped
+> self-consistent Picard map (chaotic for random anisotropic grains;
+> now under-relaxed), and the 4th-order rotation of
+> `RveGrain::rotated_stiffness` (engineering-Voigt shear factors and
+> missing symmetric pair orderings).  Remaining genuinely deferred:
+> public roadmap board, `tpt-fem` mesh-handle interop, and the
+> sibling repos that consume the adapter wire format
+> (tpt-energy / transport / electronics / medical).
 
 ---
 
@@ -103,9 +105,12 @@ Organization: **TPT Solutions** · License: **MIT OR Apache-2.0** (dual)
   - [x] `OrientationDistributionFunction` (geodesic-Gaussian KDE on SO(3))
   - [x] `taylor_factor`: **single-Schmid proxy** — see caveat below.
 - [x] RFC 0001: `rfcs/0001-crystal-plasticity-fem.md` (existing)
-- [ ] Golden test data: FCC single-crystal tension / BCC polycrystal
-      RVE / Taylor-factor random textures — *not produced*; they
-      require FEM-integration test results that do not exist yet.
+- [x] Golden test data: FCC single-crystal tension / BCC polycrystal
+      RVE / Taylor-factor random textures — `examples/golden-generate`
+      emits `test-data/golden/crystal-plasticity/
+      fcc-single-crystal-tension.json` and `test-data/golden/
+      taylor-factor/{fcc,bcc}.json`, consumed by the
+      `golden_single_crystal.rs` integration test.
 - [x] **Verification test: FCC random-texture Taylor factor ≈ 3.06**
       — satisfied by the exact Bishop–Hill solver in `tpt-mat-rve`
       (`M̄ ≈ 3.058` over random axes; classical single-crystal
@@ -148,9 +153,9 @@ Organization: **TPT Solutions** · License: **MIT OR Apache-2.0** (dual)
   - [x] `secondary_arm_spacing` post-processing
   - [x] Solidification test: solid fraction grows from seed under undercooling (verified)
 - [x] RFC 0002: `rfcs/0002-phase-field-framework.md`
-- [ ] Golden test data: not produced (would require real
-      spinodal-dendrite numerical reference data, which is
-      outside scope).
+- [x] Golden test data: `test-data/golden/phase-field/`
+      (`spinodal-decomposition.json`, `dendritic-solidification.json`)
+      emitted by `examples/golden-generate`.
 - [x] Verification test: free energy monotonically decreases under
       Allen-Cahn step.
 - [x] Example: `examples/spinodal-decomposition/` (Cahn–Hilliard, energy drops ~18 units in 300 steps, interface area grows from 0 to 1404).
@@ -324,9 +329,11 @@ crates with library code, unit tests, examples, and RFC 0004.
   - [x] `polarization_curve(potential_range) -> PolarizationCurve`
         (anodic / cathodic Tafel branches)
 - [x] RFC 0005: degradation & failure models (GTN + FIP + Butler–Volmer)
-- [ ] Golden test data: `test-data/golden/degradation/`
+- [x] Golden test data: `test-data/golden/degradation/`
       (`gtn-void-growth.json`, `fatigue-crack-initiation.json`,
-      `corrosion-polarization.json`)
+      `corrosion-polarization.json`) emitted by
+      `examples/golden-generate`; consumed by `golden_gtn.rs` /
+      `golden_fatigue.rs` integration tests.
 - [x] Example: `examples/fatigue-crack-initiation` (polycrystal RVE →
       FIP field → critical grain)
 - [x] Example: `examples/corrosion-polarization` (Fe/Ti
@@ -387,8 +394,8 @@ crates with library code, unit tests, examples, and RFC 0004.
         (rule-of-mixtures / Maynier-type regression)
 - [x] RFC 0006: additive-manufacturing microstructure & residual stress
 - [x] RFC 0007: heat-treatment / welding transformation pipeline
-- [ ] Golden test data: `test-data/golden/energy-materials/`
-      (`battery-sei-growth.json`, `electrode-capacity-fade.json`)
+- [x] Golden test data: `test-data/golden/energy-materials/`
+      (`battery-degradation.json` — SEI-limited √t fade curve)
 - [x] Example: `examples/battery-electrode-degradation` (NMC811
       capacity fade curve — the artifact exported to `tpt-energy`)
 - [x] Example: `examples/additive-manufacturing-microstructure`
@@ -429,14 +436,25 @@ deferred solver upgrades from Phases 2 & 5
       — `CpFemAssembly` in `tpt-mat-crystal-plasticity::fem_assembly`
       (Hex8 mesh, Gauss quadrature, Dirichlet NR), unit-tested;
       external `tpt-fem` mesh-handle interop remains future work
-- [ ] Cross-repo output adapters (spec §6):
-  - [ ] `tpt-energy` ← battery `DegradationCurve`
-  - [ ] `tpt-transport` ← composite fatigue S–N + alloy creep (`tpt-mat-creep`)
-  - [ ] `tpt-electronics` ← solder-joint fatigue / reliability
-  - [ ] `tpt-medical` ← implant corrosion rate / biocompatibility
-- [ ] WASM (spec §7): `tpt-mat-wasm` — `WasmRveSolver`,
-      `WasmPhaseField` (`step`, `get_order_parameter`), build in
-      `benchmark`/`docs` CI
+- [x] Cross-repo output adapters (spec §6) — in-repo wire-format
+      types under `tpt-materials::adapters` (feature `adapters`):
+  - [x] `tpt-energy` ← battery `DegradationCurve`
+        (`EnergyDegradationAdapter`)
+  - [x] `tpt-transport` ← composite fatigue S–N + alloy creep
+        (`TransportFatigueAdapter`, `TransportCreepAdapter`)
+  - [x] `tpt-electronics` ← solder-joint fatigue / reliability
+        (`ElectronicsSolderAdapter`)
+  - [x] `tpt-medical` ← implant corrosion rate / biocompatibility
+        (`MedicalCorrosionAdapter`)
+      All are `serde::Serialize` for JSON across the cross-repo
+      boundary; the sibling repos themselves live outside this
+      workspace.
+- [x] WASM (spec §7): `tpt-mat-wasm` — `WasmRveSolver`
+      (`solve` + per-grain stiffness, Voigt/Reuss/self-consistent
+      schemes), `WasmPhaseField` (`step`, `get_order_parameter`),
+      native-logic tests, and a `wasm32-unknown-unknown` build gate
+      in `.github/workflows/ci.yml` (mirrors the release workflow's
+      wasm target build).
 - [x] `tpt-materials` umbrella / facade crate — thin re-export so the
       spec §6 & §13 snippets (`use tpt_materials::crystallography::…`,
       `::crystal_plasticity::…`, `::energy_materials::…`) resolve
@@ -945,3 +963,63 @@ Completed this session:
 | `crates/tpt-mat-rve/src/lib.rs` | Removed stale `mod lemke` + re-export (compile fix) |
 | `crates/tpt-mat-crystallography/src/crystal_structure.rs` | Corrected FCC/BCC slip-system generation |
 | `todo.md` | This summary + checked boxes for Bishop–Hill/LCP, FFT, CP-FEM, Hill–Mandel, doc-tests, cargo-deny |
+
+## Session summary — 2026-09-12 (fifth pass)
+
+Completed this session:
+
+- **Golden test-data pipeline** — examples/golden-generate now
+  emits all Phase-2/3/6/7 golden datasets into 	est-data/golden/
+  (crystal-plasticity/fcc-single-crystal-tension.json,
+  	aylor-factor/{fcc,bcc}.json,
+  phase-field/{spinodal-decomposition,dendritic-solidification}.json,
+  degradation/{gtn-void-growth,fatigue-crack-initiation}.json,
+  energy-materials/{corrosion-polarization,battery-degradation}.json),
+  consumed by the golden_single_crystal.rs, golden_gtn.rs and
+  golden_fatigue.rs integration tests plus the corrosion-polarization
+  golden test added this pass.
+- **Three real physics bugs fixed in the RVE / homogenization path:**
+  - 	pt-mat-homogenization/src/eshelby.rs — the 6×6 spherical
+    Eshelby tensor was wrong: normal off-diagonal entries were zero
+    (should be S_h/3 − S_d/3) and the engineering-shear diagonal was
+    2·S_d instead of S_d/2.  Added two analytic regression tests
+    (eshelby_6x6_sphere_matches_analytic_voigt_entries,
+    dilute_strain_concentration_isotropic_matches_analytic).
+  - 	pt-mat-rve/src/rve.rs — the one-site self-consistent Picard map
+    was not a contraction for random anisotropic grains (K exploded to
+    ≥ 5e12).  Now under-relaxed (OMEGA = 0.6, blended update);
+    verified across seeds 1–7 with 80 random FCC grains: SC lies between
+    Reuss and Voigt and bulk stays at the crystal value.
+  - 	pt-mat-rve/src/rve.rs — RveGrain::rotated_stiffness produced
+    physically impossible orientations (sample shear ≈ 4e8 Pa for FCC
+    that must lie in [2.35, 7.54]e10).  Root cause was twofold: the
+    engineering-Voigt shear-weight factors were wrong and the rotation
+    used only one of the two orderings of each shear index pair.
+    Rewritten as the symmetrised commodity C' = Q·C·Qᵀ with
+    Q[i][k] = Σ_{(m,n) ∈ pair(k)} R_{a,m} R_{b,n}.  Verified against
+    the explicit 3⁴ tensor-rotation reference (max entry diff ≈ 1.5e-4 Pa),
+    exact identity / 90°-z / 120°-111 cubic-symmetry reproduction, and
+    physical shear bounds.  Regression test
+    self_consistent_anisotropic_random_grains_stays_between_bounds
+    now passes with a rotation-invariant bulk helper.
+- **Phase 8 WASM bindings** — 	pt-mat-wasm exposes WasmRveSolver
+  and WasmPhaseField with serde payloads, native-logic tests, and a
+  wasm32-unknown-unknown build job added to .github/workflows/ci.yml.
+- **Phase 8 cross-repo adapters (spec §6)** — the dapters module in
+  	pt-materials now covers all four target repos
+  (energy / transport / electronics / medical) behind the dapters
+  feature.
+
+Workspace state after this pass:
+
+- **500 tests** passing across the full workspace (all suites green).
+- cargo build -p tpt-mat-wasm --target wasm32-unknown-unknown
+  green; cargo fmt --all applied; clippy shows only pre-existing
+  pedantic lints in untouched files.
+
+Remaining genuinely-deferred items (unchanged):
+
+- Public GitHub Projects roadmap board (external).
+- 	pt-fem mesh-handle interop for the CP-FEM assembly (external).
+- Live cross-repo consumers of the adapters' wire format (the sibling
+  repos live in other workspaces).

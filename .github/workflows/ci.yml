@@ -56,6 +56,18 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - run: cargo build --workspace --locked
 
+  wasm:
+    name: WASM bindings build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo build -p tpt-mat-wasm --target wasm32-unknown-unknown
+      - run: cargo test -p tpt-mat-wasm
+
   dco:
     name: DCO sign-off
     if: github.event_name == 'pull_request'

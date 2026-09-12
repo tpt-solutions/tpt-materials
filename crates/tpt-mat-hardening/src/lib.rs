@@ -50,7 +50,7 @@ impl HardeningLaw for VoceHardening {
         debug_assert_eq!(state.accumulated_shear.len(), n);
         debug_assert_eq!(delta_gamma.len(), n);
         for (alpha, d_gamma_a) in delta_gamma.iter().enumerate() {
-            state.accumulated_shear[alpha] += d_gamma_a;
+            state.accumulated_shear[alpha] += d_gamma_a.abs();
         }
         for alpha in 0..n {
             let gamma = state.accumulated_shear[alpha];
@@ -95,7 +95,7 @@ impl HardeningLaw for PowerLawHardening {
         let _ = slip_systems;
         let p = self.params;
         for alpha in 0..n {
-            state.accumulated_shear[alpha] += delta_gamma[alpha];
+            state.accumulated_shear[alpha] += delta_gamma[alpha].abs();
             let dg = delta_gamma[alpha].abs();
             let sat = p.tau_s - state.crss[alpha];
             let increment = p.h_0 * sat * dg / p.tau_s.max(1e-12);
@@ -136,7 +136,7 @@ impl HardeningLaw for KocksMeckingHardening {
         let p = self.params;
         let gamma_c = (p.tau_s / p.theta_0).max(1e-12);
         for alpha in 0..n {
-            state.accumulated_shear[alpha] += delta_gamma[alpha];
+            state.accumulated_shear[alpha] += delta_gamma[alpha].abs();
             let gamma_inc = state.accumulated_shear[alpha];
             state.crss[alpha] = p.tau_s - (p.tau_s - p.tau_0) * (-gamma_inc / gamma_c).exp();
         }
@@ -168,7 +168,7 @@ impl HardeningLaw for CombinedHardening {
         let _ = slip_systems;
         let matrix = latent.with_latent(self.params.q_latent, self.params.h_0);
         for alpha in 0..n {
-            state.accumulated_shear[alpha] += delta_gamma[alpha];
+            state.accumulated_shear[alpha] += delta_gamma[alpha].abs();
         }
         for alpha in 0..n {
             let mut d_tau = 0.0;
@@ -225,6 +225,19 @@ impl Hardening {
             Hardening::KocksMecking(h) => h.update(state, slip_systems, delta_gamma, latent),
             Hardening::Combined(h) => h.update(state, slip_systems, delta_gamma, latent),
             Hardening::DislocationDensity(h) => h.update(state, slip_systems, delta_gamma, latent),
+        }
+    }
+
+    /// Base (initial) CRSS used to seed a fresh [`HardeningState`], if
+    /// the law defines one explicitly; laws that are purely incremental
+    /// (`PowerLaw`, `Combined`) return `None` and callers fall back to
+    /// the per-slip-system CRSS.
+    pub fn base_crss(&self) -> Option<f64> {
+        match self {
+            Hardening::Voce(h) => Some(h.params.tau_0),
+            Hardening::KocksMecking(h) => Some(h.params.tau_0),
+            Hardening::DislocationDensity(h) => Some(h.params.tau_0),
+            Hardening::PowerLaw(_) | Hardening::Combined(_) => None,
         }
     }
 }

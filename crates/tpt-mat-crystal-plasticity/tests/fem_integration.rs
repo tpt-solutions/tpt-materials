@@ -117,7 +117,10 @@ fn tpt_fem_single_hex_mesh_drives_uniaxial_tension() {
         .expect("single-hex NR solve must converge");
     assert_eq!(result.stresses.len(), 8);
     assert!(
-        result.stresses.iter().all(|s| s.data.iter().all(|v| v.is_finite())),
+        result
+            .stresses
+            .iter()
+            .all(|s| s.data.iter().all(|v| v.is_finite())),
         "all Gauss-point stresses must be finite"
     );
 }
@@ -144,7 +147,10 @@ fn tpt_fem_two_hex_mesh_shares_nodes_and_converges() {
         .expect("two-hex NR solve must converge");
     assert_eq!(result.stresses.len(), 16);
     assert!(
-        result.stresses.iter().all(|s| s.data.iter().all(|v| v.is_finite())),
+        result
+            .stresses
+            .iter()
+            .all(|s| s.data.iter().all(|v| v.is_finite())),
         "all Gauss-point stresses must be finite"
     );
 }

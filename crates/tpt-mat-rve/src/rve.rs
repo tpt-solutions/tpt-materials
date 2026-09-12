@@ -71,38 +71,36 @@ impl RveGrain {
 
     /// Stiffness tensor rotated from the crystal frame into the
     /// sample frame.
+    ///
+    /// The stored 6x6 matrix uses engineering shear strain (`σ = C·E`
+    /// with `E_j = (2 - δ) ε`), the standard no-double Voigt layout
+    /// whose entries *are* the 4th-order tensor components.  Rotating
+    /// the 4th-order tensor by `R` and re-compressing gives the
+    /// symmetrised basis `Q[i][k] = Σ_{(m,n)∈pair(k)} R_{a,m} R_{b,n}`
+    /// (both orderings of each shear pair), so `C' = Q·C·Qᵀ`
+    /// reproduces the exact `R ⊗₄ R` rotation to machine precision
+    /// and preserves the tensor invariants and positivity by
+    /// construction.
     pub fn rotated_stiffness(&self) -> SymmetricFourthOrder {
         let r = self.orientation;
-        let mut c = [[0.0_f64; 6]; 6];
-        // Map (i,j) ↔ (a,b) for each row/col of the 6x6 Voigt matrix.
-        let p = |idx: usize| -> (usize, usize) {
-            match idx {
-                0 => (0, 0),
-                1 => (1, 1),
-                2 => (2, 2),
-                3 => (0, 1),
-                4 => (1, 2),
-                5 => (0, 2),
-                _ => panic!("Voigt index {idx}"),
+        let q = |i: usize, k: usize| -> f64 {
+            let (a, b) = voigt_pair(i);
+            match k {
+                0..=2 => r[a][k] * r[b][k],
+                3 => r[a][0] * r[b][1] + r[a][1] * r[b][0],
+                4 => r[a][1] * r[b][2] + r[a][2] * r[b][1],
+                5 => r[a][0] * r[b][2] + r[a][2] * r[b][0],
+                _ => unreachable!("Voigt index {k}"),
             }
         };
+        let s = &self.stiffness.data;
+        let mut c = [[0.0_f64; 6]; 6];
         for i in 0..6 {
             for j in 0..6 {
                 let mut acc = 0.0;
                 for k in 0..6 {
                     for l in 0..6 {
-                        let (a, c1) = p(i);
-                        let (b, d) = p(j);
-                        let (p1, q1) = p(k);
-                        let (p2, q2) = p(l);
-                        // Engineering shear factor: standard Voigt
-                        // rotation of a 4th-order tensor.
-                        let f_i = if a == c1 { 1.0 } else { 2.0 };
-                        let f_j = if b == d { 1.0 } else { 2.0 };
-                        let f_k = if p1 == q1 { 1.0 } else { 2.0 };
-                        let f_l = if p2 == q2 { 1.0 } else { 2.0 };
-                        let r_factor = r[a][p1] * r[c1][q1] * r[b][p2] * r[d][q2];
-                        acc += f_i * f_j * r_factor * self.stiffness.data[k][l] / (f_k * f_l);
+                        acc += q(i, k) * s[k][l] * q(j, l);
                     }
                 }
                 c[i][j] = acc;
@@ -122,6 +120,19 @@ fn voigt_idx(i: usize, j: usize) -> usize {
         (1, 2) | (2, 1) => 4,
         (0, 2) | (2, 0) => 5,
         _ => panic!("Voigt index out of range"),
+    }
+}
+
+#[inline]
+fn voigt_pair(idx: usize) -> (usize, usize) {
+    match idx {
+        0 => (0, 0),
+        1 => (1, 1),
+        2 => (2, 2),
+        3 => (0, 1),
+        4 => (1, 2),
+        5 => (0, 2),
+        _ => panic!("Voigt index {idx} out of range"),
     }
 }
 
@@ -204,6 +215,10 @@ impl Rve {
                 let mut c_eff = voigt(&phases);
                 const MAX_ITER: usize = 60;
                 const TOL: f64 = 1.0e-10;
+                // Under-relaxation for strongly anisotropic grains:
+                // the undamped Picard map is not a global contraction
+                // and can wander behind the Voigt/Reuss envelope.
+                const OMEGA: f64 = 0.6;
                 for _ in 0..MAX_ITER {
                     let eshelby = EshelbySpherical::from_nu(effective_poisson(&c_eff));
                     let mut weighted = [[0.0_f64; 6]; 6]; // Σ f_i C_i A_i
@@ -225,13 +240,20 @@ impl Rve {
                         }
                     }
                     let c_new = mat6_mul(&weighted, &inv6(a_avg).data);
+                    let mut blended = [[0.0_f64; 6]; 6];
+                    for i in 0..6 {
+                        for j in 0..6 {
+                            blended[i][j] =
+                                c_eff.data[i][j] + OMEGA * (c_new[i][j] - c_eff.data[i][j]);
+                        }
+                    }
                     let mut max_diff = 0.0_f64;
                     for i in 0..6 {
                         for j in 0..6 {
-                            max_diff = max_diff.max((c_new[i][j] - c_eff.data[i][j]).abs());
+                            max_diff = max_diff.max((blended[i][j] - c_eff.data[i][j]).abs());
                         }
                     }
-                    c_eff = SymmetricFourthOrder::new(c_new);
+                    c_eff = SymmetricFourthOrder::new(blended);
                     if max_diff < TOL * c_eff.data[0][0].max(1.0) {
                         break;
                     }
@@ -461,6 +483,73 @@ mod tests {
                 assert!((c_sc.data[i][j] - c_sc.data[j][i]).abs() < 1e-9);
             }
         }
+    }
+
+    #[test]
+    fn self_consistent_anisotropic_random_grains_stays_between_bounds() {
+        // Regression: the undamped Picard map could wander behind the
+        // Voigt/Reuss envelope for randomly oriented cubic grains and
+        // its fixed point exploded.  With the isotropic Eshelby tensor
+        // fixed and an under-relaxed update, the estimate must stay
+        // between the bounds and the bulk modulus must match the
+        // (orientation-independent) crystal value.
+        let mut seed = 7u64;
+        let stiffness = SymmetricFourthOrder::cubic(168.4e9, 121.4e9, 75.4e9);
+        let grains: Vec<RveGrain> = (0..80)
+            .map(|i| {
+                RveGrain::new(
+                    format!("g{i}"),
+                    1.0 / 80.0,
+                    random_bunge(&mut seed),
+                    stiffness.clone(),
+                )
+            })
+            .collect();
+        let rve = Rve::new(grains);
+        let c_v = rve.homogenize(HomogenizationScheme::Voigt);
+        let c_r = rve.homogenize(HomogenizationScheme::Reuss);
+        let c_sc = rve.homogenize(HomogenizationScheme::SelfConsistent);
+        let fcc_bulk = (168.4e9 + 2.0 * 121.4e9) / 3.0;
+        // Rotation-invariant bulk (valid for fully anisotropic tensors,
+        // unlike (C11 + 2 C12) / 3 which only applies to cubes).
+        let bulk = |c: &SymmetricFourthOrder| {
+            (c.data[0][0]
+                + c.data[1][1]
+                + c.data[2][2]
+                + 2.0 * (c.data[0][1] + c.data[0][2] + c.data[1][2]))
+                / 9.0
+        };
+        let shear = |c: &SymmetricFourthOrder| c.data[3][3];
+        assert!(bulk(&c_sc) >= bulk(&c_r) - 1e6);
+        assert!(bulk(&c_sc) <= bulk(&c_v) + 1e6);
+        assert!(shear(&c_sc) >= shear(&c_r) - 1e6);
+        assert!(shear(&c_sc) <= shear(&c_v) + 1e6);
+        assert!(
+            (bulk(&c_sc) - fcc_bulk).abs() < 0.02 * fcc_bulk,
+            "SC bulk {} drifted from crystal bulk {fcc_bulk}",
+            bulk(&c_sc)
+        );
+    }
+
+    /// Bunge (Z–X–Z) Euler angles from a xorshift stream.
+    fn random_bunge(seed: &mut u64) -> [[f64; 3]; 3] {
+        let next = |seed: &mut u64| {
+            *seed ^= *seed << 13;
+            *seed ^= *seed >> 7;
+            *seed ^= *seed << 17;
+            *seed as f64 / u64::MAX as f64
+        };
+        let phi1 = 2.0 * std::f64::consts::PI * next(seed);
+        let phi = (1.0 - 2.0 * next(seed)).acos();
+        let phi2 = 2.0 * std::f64::consts::PI * next(seed);
+        let (s1, c1) = phi1.sin_cos();
+        let (sp, cp) = phi.sin_cos();
+        let (s2, c2) = phi2.sin_cos();
+        [
+            [c1 * c2 - s1 * cp * s2, s1 * c2 + c1 * cp * s2, sp * s2],
+            [-c1 * s2 - s1 * cp * c2, -s1 * s2 + c1 * cp * c2, sp * c2],
+            [s1 * sp, -c1 * sp, cp],
+        ]
     }
 
     #[test]

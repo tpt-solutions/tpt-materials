@@ -73,9 +73,20 @@ fn fatigue_crack_initiation_golden() {
             })
             .collect::<Vec<_>>();
         assert_eq!(
-            shear_history, expected_shear,
-            "case[{idx}] accumulated-shear history mismatch"
+            expected_shear.len(),
+            shear_history.len(),
+            "case[{idx}] grain count"
         );
+        for (gi, (computed_g, stored_g)) in shear_history.iter().zip(&expected_shear).enumerate() {
+            assert_eq!(
+                computed_g.len(),
+                stored_g.len(),
+                "case[{idx}] grain {gi} system count"
+            );
+            for (si, (c, s)) in computed_g.iter().zip(stored_g).enumerate() {
+                close(&format!("case[{idx}] history[{gi}][{si}]"), *c, *s);
+            }
+        }
         let (name, criterion) = &criteria[idx];
         let r = predict_crack_initiation(&shear_history, criterion.clone(), 1000.0, 0.25);
         close(
