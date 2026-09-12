@@ -41,6 +41,7 @@ members = [
     "crates/tpt-mat-wasm",
     "crates/tpt-mat-inverse",
     "crates/tpt-materials",
+    "examples/golden-generate",
     "examples/fcc-single-crystal-tension",
     "examples/spinodal-decomposition",
     "examples/dendritic-solidification",

@@ -84,7 +84,9 @@ pub struct GrainBoundaryCharacterDistribution {
 impl GrainBoundaryCharacterDistribution {
     /// Empty distribution.
     pub fn new() -> Self {
-        Self { entries: Vec::new() }
+        Self {
+            entries: Vec::new(),
+        }
     }
 
     /// Add an entry.
@@ -238,12 +240,7 @@ impl LangmuirMcLean {
     }
 
     /// Enrichment factor `β = X_GB / X_bulk`.
-    pub fn enrichment_factor(
-        &self,
-        x_bulk: f64,
-        temperature_k: f64,
-        gas_constant: f64,
-    ) -> f64 {
+    pub fn enrichment_factor(&self, x_bulk: f64, temperature_k: f64, gas_constant: f64) -> f64 {
         if x_bulk.abs() < 1.0e-30 {
             return 0.0;
         }

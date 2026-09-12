@@ -17,11 +17,17 @@
 //!
 //! # Spec §6 / §13 import snippets
 //!
-//! ```ignore
+//! These snippets are compiled and exercised when the `full` feature
+//! is enabled (run `cargo test -p tpt-materials --doc --features full`).
+//!
+//! ```
+//! # #[cfg(feature = "full")]
+//! # {
 //! use tpt_materials::crystallography::CrystalStructure;
 //! use tpt_materials::crystal_plasticity::{CrystalPlasticityModel, RateSensitivity};
 //! use tpt_materials::homogenization::voigt;
 //! use tpt_materials::hardening::{Hardening, VoceHardening, VoceParams};
+//! # }
 //! ```
 //!
 //! Lightweight runtime smoke-test of the facade:
@@ -103,6 +109,9 @@ extern crate tpt_mat_hydrogen_embrittlement;
 #[cfg(feature = "hydrogen-storage")]
 #[allow(unused_extern_crates)]
 extern crate tpt_mat_hydrogen_storage;
+#[cfg(feature = "inverse")]
+#[allow(unused_extern_crates)]
+extern crate tpt_mat_inverse;
 #[cfg(feature = "machine-learning")]
 #[allow(unused_extern_crates)]
 extern crate tpt_mat_machine_learning;
@@ -136,9 +145,6 @@ extern crate tpt_mat_wasm;
 #[cfg(feature = "welding")]
 #[allow(unused_extern_crates)]
 extern crate tpt_mat_welding;
-#[cfg(feature = "inverse")]
-#[allow(unused_extern_crates)]
-extern crate tpt_mat_inverse;
 
 #[cfg(feature = "crystallography")]
 pub mod crystallography {

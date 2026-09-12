@@ -8,14 +8,14 @@
 //! - [`Rve`]: a list of grains with orientations and stiffnesses.
 //! - [`HomogenizationScheme`]: the available analytical bounds.
 //! - [`SimpleHomogenizer`]: a convenience driver for Voigt / Reuss /
-//!   simple self-consistent homogenization over the grain list.
+//!   self-consistent homogenization over the grain list.
 
 use serde::{Deserialize, Serialize};
 
 use tpt_mat_crystal_plasticity::SymmetricFourthOrder;
 use tpt_math_linalg_fixed::Vec6;
 
-use crate::homogenization::{reuss, voigt};
+use crate::homogenization::{dilute_strain_concentration, reuss, voigt, EshelbySpherical};
 
 /// A single grain in the RVE.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -154,7 +154,7 @@ impl Rve {
     }
 
     /// Effective stiffness under the chosen homogenization scheme
-    /// (Voigt or Reuss).
+    /// (Voigt, Reuss or one-site self-consistent).
     pub fn homogenize(&self, scheme: HomogenizationScheme) -> SymmetricFourthOrder {
         match scheme {
             HomogenizationScheme::Voigt => {
@@ -177,61 +177,64 @@ impl Rve {
                 inv6(s_avg)
             }
             HomogenizationScheme::SelfConsistent => {
-                // Simple iterative one-site self-consistent scheme:
-                // start with Voigt, update each grain's inclusion
-                // problem in the effective medium, average the
-                // resulting stiffnesses.  Converges in 30 iterations
-                // for typical cubic-stiffness polycrystals.
+                // One-site self-consistent (Kröner, 1958; Budiansky &
+                // Wu, 1962) scheme.
+                //
+                // Each grain is treated as a spherical Eshelby
+                // inclusion in the *unknown* effective medium `C*`; the
+                // strain-concentration tensors
+                // `A_i = [I + S(C*, ν*) C*^{-1} (C_i - C*)]^{-1}` are
+                // built from the Eshelby tensor of the implicit medium
+                // and the medium is updated by enforcing the
+                // self-consistency condition
+                // `C* = ⟨C_i A_i⟩ ⟨A_i⟩^{-1}`.  Iterated to a fixed
+                // point this lies strictly between the Voigt and Reuss
+                // bounds (it coincides with the Kröner–Budiansky–Wu
+                // estimate for isotropic / weakly anisotropic grains).
                 let n = self.grains.len();
                 if n == 0 {
                     return SymmetricFourthOrder::new([[0.0_f64; 6]; 6]);
                 }
-                // Initial guess: Voigt.
+                let total_f: f64 = self.grains.iter().map(|g| g.volume_fraction).sum();
                 let phases: Vec<_> = self
                     .grains
                     .iter()
                     .map(|g| (g.rotated_stiffness(), g.volume_fraction))
                     .collect();
                 let mut c_eff = voigt(&phases);
-                let s_eff = c_eff.compliance();
-                for _ in 0..30 {
-                    // For each grain, treat its rotated stiffness as an
-                    // inclusion in the current effective medium; the
-                    // dilute strain-concentration tensor A_i gives
-                    // ε_i = A_i : ε^∞.  Average C_i : A_i over grains
-                    // and update c_eff to enforce `C_eff : ε = ⟨C_i : ε_i⟩`.
-                    let mut c_new = [[0.0_f64; 6]; 6];
-                    let mut total_f = 0.0;
+                const MAX_ITER: usize = 60;
+                const TOL: f64 = 1.0e-10;
+                for _ in 0..MAX_ITER {
+                    let eshelby = EshelbySpherical::from_nu(effective_poisson(&c_eff));
+                    let mut weighted = [[0.0_f64; 6]; 6]; // Σ f_i C_i A_i
+                    let mut a_avg = [[0.0_f64; 6]; 6]; // Σ f_i A_i
                     for g in &self.grains {
                         let c_i = g.rotated_stiffness();
-                        // Use isotropic Eshelby approximation with
-                        // ν from the effective medium's Poisson ratio.
-                        let nu_eff = effective_poisson(&c_eff);
-                        let s_e = crate::bishop_hill::voigt_to_nu(nu_eff);
-                        let _ = s_eff;
-                        let _ = (nu_eff, s_e);
-                        // Skip rigorous dilute calculation for
-                        // performance: simply weight the per-grain
-                        // stiffness with the volume fraction as the
-                        // Voigt step.  This converges to the Voigt
-                        // bound; for a proper SC scheme, use the
-                        // Kröner–Eshelby formulation in a future
-                        // version.  Here we approximate by Voigt.
-                        for ii in 0..6 {
-                            for jj in 0..6 {
-                                c_new[ii][jj] += g.volume_fraction * c_i.data[ii][jj];
+                        let f_i = if total_f > 0.0 {
+                            g.volume_fraction / total_f
+                        } else {
+                            0.0
+                        };
+                        let a = dilute_strain_concentration(&c_eff, &c_i, eshelby).data;
+                        let c_a = mat6_mul(&c_i.data, &a);
+                        for i in 0..6 {
+                            for j in 0..6 {
+                                weighted[i][j] += f_i * c_a[i][j];
+                                a_avg[i][j] += f_i * a[i][j];
                             }
                         }
-                        total_f += g.volume_fraction;
                     }
-                    if total_f > 0.0 {
-                        for ii in 0..6 {
-                            for jj in 0..6 {
-                                c_new[ii][jj] /= total_f;
-                            }
+                    let c_new = mat6_mul(&weighted, &inv6(a_avg).data);
+                    let mut max_diff = 0.0_f64;
+                    for i in 0..6 {
+                        for j in 0..6 {
+                            max_diff = max_diff.max((c_new[i][j] - c_eff.data[i][j]).abs());
                         }
                     }
                     c_eff = SymmetricFourthOrder::new(c_new);
+                    if max_diff < TOL * c_eff.data[0][0].max(1.0) {
+                        break;
+                    }
                 }
                 c_eff
             }
@@ -239,15 +242,35 @@ impl Rve {
     }
 }
 
+/// 6x6 matrix product.
+fn mat6_mul(a: &[[f64; 6]; 6], b: &[[f64; 6]; 6]) -> [[f64; 6]; 6] {
+    let mut out = [[0.0_f64; 6]; 6];
+    for i in 0..6 {
+        for j in 0..6 {
+            let mut acc = 0.0;
+            for k in 0..6 {
+                acc += a[i][k] * b[k][j];
+            }
+            out[i][j] = acc;
+        }
+    }
+    out
+}
+
 /// Effective-medium Poisson's ratio from the isotropic part of `C`.
 fn effective_poisson(c: &SymmetricFourthOrder) -> f64 {
-    let c11 = c.data[0][0];
-    let c12 = c.data[0][1];
-    let denom = 3.0 * c11 - c12;
-    if denom.abs() < 1e-15 {
+    let d = c.data;
+    let c11 = (d[0][0] + d[1][1] + d[2][2]) / 3.0;
+    let c12 = (d[0][1] + d[0][2] + d[1][2]) / 3.0;
+    let c44 = (d[3][3] + d[4][4] + d[5][5]) / 3.0;
+    let k = (c11 + 2.0 * c12) / 3.0;
+    let g = c44;
+    // ν = (3K − 2G) / (2 (3K + G)).
+    let denom = 2.0 * (3.0 * k + g);
+    if denom < 1e-15 {
         return 0.3;
     }
-    let nu = (c11 - c12) / denom;
+    let nu = (3.0 * k - 2.0 * g) / denom;
     nu.clamp(-0.99, 0.499)
 }
 
@@ -258,8 +281,7 @@ pub enum HomogenizationScheme {
     Voigt,
     /// Reuss (iso-stress) lower bound.
     Reuss,
-    /// One-site self-consistent mean field (Voigt-step approximation
-    /// in this crate — see [`Rve::homogenize`] for caveats).
+    /// One-site self-consistent mean field (Kröner / Budiansky–Wu).
     SelfConsistent,
 }
 
@@ -417,6 +439,43 @@ mod tests {
     }
 
     #[test]
+    fn self_consistent_lies_strictly_between_reuss_and_voigt() {
+        let c_a = SymmetricFourthOrder::isotropic(70_000.0, 0.33);
+        let c_b = SymmetricFourthOrder::isotropic(200_000.0, 0.3);
+        let rve = Rve::new(vec![
+            RveGrain::new("a", 0.3, identity(), c_a.clone()),
+            RveGrain::new("b", 0.7, identity(), c_b.clone()),
+        ]);
+        let c_v = rve.homogenize(HomogenizationScheme::Voigt);
+        let c_r = rve.homogenize(HomogenizationScheme::Reuss);
+        let c_sc = rve.homogenize(HomogenizationScheme::SelfConsistent);
+        // Bulk and shear components of the SC estimate must lie
+        // strictly inside the Voigt/Reuss interval.
+        let bulk = |c: &SymmetricFourthOrder| (c.data[0][0] + 2.0 * c.data[0][1]) / 3.0;
+        let shear = |c: &SymmetricFourthOrder| c.data[3][3];
+        assert!(bulk(&c_r) < bulk(&c_sc) && bulk(&c_sc) < bulk(&c_v));
+        assert!(shear(&c_r) < shear(&c_sc) && shear(&c_sc) < shear(&c_v));
+        // Symmetry of the returned tensor (new() symmetrises).
+        for i in 0..6 {
+            for j in 0..6 {
+                assert!((c_sc.data[i][j] - c_sc.data[j][i]).abs() < 1e-9);
+            }
+        }
+    }
+
+    #[test]
+    fn self_consistent_single_grain_recovers_input() {
+        let c = SymmetricFourthOrder::isotropic(200_000.0, 0.3);
+        let rve = Rve::new(vec![RveGrain::new("g0", 1.0, identity(), c.clone())]);
+        let c_sc = rve.homogenize(HomogenizationScheme::SelfConsistent);
+        for i in 0..6 {
+            for j in 0..6 {
+                assert!((c_sc.data[i][j] - c.data[i][j]).abs() < 1e-3);
+            }
+        }
+    }
+
+    #[test]
     fn stats_counts_grains_and_volume_fraction() {
         let c = SymmetricFourthOrder::isotropic(100_000.0, 0.3);
         let rve = Rve::new(vec![
@@ -474,13 +533,9 @@ mod tests {
         let e_a = apply_compliance(s_a, sigma);
         let e_b = apply_compliance(s_b, sigma);
         let macro_energy = sigma.double_dot(e_avg);
-        let micro_energy =
-            sigma.double_dot(e_a.scale(0.3) + e_b.scale(0.7));
+        let micro_energy = sigma.double_dot(e_a.scale(0.3) + e_b.scale(0.7));
         let rel = (macro_energy - micro_energy).abs() / macro_energy.abs().max(1e-30);
-        assert!(
-            rel < 1.0e-9,
-            "Reuss Hill–Mandel mismatch: {rel:.3e}"
-        );
+        assert!(rel < 1.0e-9, "Reuss Hill–Mandel mismatch: {rel:.3e}");
     }
 }
 

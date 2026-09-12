@@ -95,29 +95,24 @@ impl HardeningLaw for DislocationDensityHardening {
         if slip_systems.is_empty() {
             return;
         }
-        let mut densities: Vec<DislocationDensityState> = if state.extra.len()
-            == slip_systems.len() * 3
-        {
-            let mut out = Vec::with_capacity(slip_systems.len());
-            for chunk in state.extra.chunks_exact(3) {
-                out.push(DislocationDensityState {
-                    rho_ssd: chunk[0],
-                    rho_gnd: chunk[1],
-                    rho_forest: chunk[2],
-                });
-            }
-            out
-        } else {
-            self.initial_densities(slip_systems)
-        };
+        let mut densities: Vec<DislocationDensityState> =
+            if state.extra.len() == slip_systems.len() * 3 {
+                let mut out = Vec::with_capacity(slip_systems.len());
+                for chunk in state.extra.chunks_exact(3) {
+                    out.push(DislocationDensityState {
+                        rho_ssd: chunk[0],
+                        rho_gnd: chunk[1],
+                        rho_forest: chunk[2],
+                    });
+                }
+                out
+            } else {
+                self.initial_densities(slip_systems)
+            };
 
         let km = self.km_params();
         for (alpha_idx, slip) in slip_systems.iter().enumerate() {
-            let dep = delta_gamma
-                .get(alpha_idx)
-                .copied()
-                .unwrap_or(0.0)
-                .abs();
+            let dep = delta_gamma.get(alpha_idx).copied().unwrap_or(0.0).abs();
             if dep > 0.0 {
                 densities[alpha_idx] = kocks_mecking_step(&densities[alpha_idx], dep, &km);
             }
@@ -176,8 +171,8 @@ mod tests {
             law.update(&mut state, &slips, &vec![0.001; slips.len()], &latent);
         }
         let expected_rho = (params.k1 / params.k2).powi(2);
-        let expected_tau = params.alpha * params.shear_modulus * params.burgers_vector
-            * expected_rho.sqrt();
+        let expected_tau =
+            params.alpha * params.shear_modulus * params.burgers_vector * expected_rho.sqrt();
         for &tau in &state.crss {
             let rel = (tau - expected_tau).abs() / expected_tau;
             assert!(rel < 0.1, "saturation CRSS {tau} vs theory {expected_tau}");

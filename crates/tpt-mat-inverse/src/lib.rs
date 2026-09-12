@@ -18,8 +18,7 @@ mod models;
 
 pub use levenberg_marquardt::{LevenbergMarquardt, LevenbergMarquardtResult};
 pub use models::{
-    arrhenius_fit, avrami_fit, coffin_manson_fit, norton_creep_fit, power_law_sn_fit,
-    voce_fit,
+    arrhenius_fit, avrami_fit, coffin_manson_fit, norton_creep_fit, power_law_sn_fit, voce_fit,
 };
 
 #[cfg(test)]
@@ -48,7 +47,7 @@ mod tests {
         assert!(approx(fit.q, q_true, 100.0));
     }
 
-#[test]
+    #[test]
     fn norton_creep_fit_recovers_a_and_n() {
         // ln(dε/dt) = ln(A) − Q/R T + n ln(σ)
         let a_true: f64 = 1.0e-5;

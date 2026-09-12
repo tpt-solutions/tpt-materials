@@ -2,17 +2,22 @@
 
 Organization: **TPT Solutions** · License: **MIT OR Apache-2.0** (dual)
 
-> **Status snapshot — 2026-09-03 (third pass).**  Phases 1–10
+> **Status snapshot — 2026-09-10 (fourth pass).**  Phases 1–10
 > are now all implemented (see session summaries at the end).
-> Remaining work consists of genuinely deferred items:
-> full Lemke LCP Bishop–Hill solver (recovers `M ≈ 3.06`),
-> FFT homogenisation, full CP-FEM assembly + Newton–Raphson
-> (requires `tpt-fem` mesh handles from another repo), golden
-> test datasets, public roadmap board, license-allow CI, full
-> WASM bindings, and the five cross-repo output adapters
-> (tpt-energy / transport / electronics / medical).  Backlog
-> modules (oxidation, GBs, recrystallisation, stereology,
-> inverse calibration) are documented at the bottom.
+> Completed this pass: the exact Bishop–Hill / LCP Taylor-factor
+> solver (random FCC `M ≈ 3.06` recovered), the Phase-2 CP-FEM
+> assembly + Newton–Raphson, FFT homogenisation (Moulinec–Suquet),
+> the end-to-end Hill–Mandel verification test, the spec §6/§13
+> doc-tests, and the `cargo deny` CI job (checked green locally).
+> Also fixed a data bug: FCC/BCC slip systems were built from a
+> shared direction list, leaving 6 of 12 systems with `s·n ≠ 0`;
+> directions are now selected programmatically per plane.
+> Remaining genuinely deferred items: golden test datasets,
+> public roadmap board, full WASM bindings, and the five
+> cross-repo output adapters (tpt-energy / transport /
+> electronics / medical).  Backlog modules (oxidation, GBs,
+> recrystallisation, stereology, inverse calibration) are
+> documented at the bottom.
 
 ---
 
@@ -86,12 +91,11 @@ Organization: **TPT Solutions** · License: **MIT OR Apache-2.0** (dual)
   - [x] `solve_increment_single_point` (radial-return kernel + hardening update)
   - [x] `CpFemSolver` + `BoundaryConditions` + `LoadStep` + `CpFemResult`
   - [x] `PlasticIncrement` (velocity gradient, slip rates)
-  - [ ] **Full FEM assembly + Newton-Raphson**: deferred.  The
-    constitutive model kernel is complete; FEM assembly is wired
-    through optional `tpt-fem-solve` / `tpt-fem-assembly`
-    dependencies (off by default) — they are not yet exercised by
-    an integration test because the `tpt-fem` mesh handle types are
-    not in this workspace.
+  - [x] **Full FEM assembly + Newton-Raphson**: `CpFemAssembly`
+    (Hex8 trilinear elements, 8-point Gauss rule, Dirichlet
+    elimination) with per-load-step NR — implemented and covered by
+    unit tests in `fem_assembly.rs` (integration with external
+    `tpt-fem` mesh handles remains future work).
 - [x] `tpt-mat-texture`
   - [x] `TextureAnalyzer` (orientations + weights; `from_ebsd`)
   - [x] `PoleFigure` (equal-area / stereographic; `Fcc111`,
@@ -102,14 +106,11 @@ Organization: **TPT Solutions** · License: **MIT OR Apache-2.0** (dual)
 - [ ] Golden test data: FCC single-crystal tension / BCC polycrystal
       RVE / Taylor-factor random textures — *not produced*; they
       require FEM-integration test results that do not exist yet.
-- [ ] **Verification test: FCC random-texture Taylor factor ≈ 3.06**
-      is **not** satisfied by the current proxy (M ≈ 2.0–2.3).
-      Documented as a limitation: the proper Taylor factor requires
-      a Bishop–Hill LCP solver to find the 5 slip systems that
-      accommodate the macroscopic strain; the single-Schmid
-      `1 / max_schmid` proxy over-counts because it assumes
-      single-system activation.  The full solver is queued for
-      Phase 5 alongside the RVE/homogenization stack.
+- [x] **Verification test: FCC random-texture Taylor factor ≈ 3.06**
+      — satisfied by the exact Bishop–Hill solver in `tpt-mat-rve`
+      (`M̄ ≈ 3.058` over random axes; classical single-crystal
+      values `[001] → √6` and `[110]`, `[111] → 3√6/2` reproduced;
+      LP duality `σ : ε = τ_c Σ|γ^α|` holds to 1e-9).
 - [x] Example: `examples/fcc-single-crystal-tension/` (runs the
       solver, prints slip activation + Taylor factor + pole figure).
 
@@ -228,17 +229,20 @@ Organization: **TPT Solutions** · License: **MIT OR Apache-2.0** (dual)
   - [x] `RveStats` (n_grains, total volume fraction,
         unique-orientation count)
   - [x] `SimpleHomogenizer` (Voigt/Reuss convenience wrapper)
-  - [x] **Bishop–Hill (1951) Taylor factor solver**
+  - [x] **Bishop–Hill (1951) Taylor factor solver** (exact)
         (`bishop_hill_taylor_factor_axis` /
-        `bishop_hill_taylor_factor`)
-        — replaces the Phase 2 single-Schmid proxy with a true
-        // primal solver; documented limitation: uses L2
-        // pseudo-inverse, recovers `M ≈ 2.0–2.5` for random FCC
-        // (vs Taylor's classical `3.06`); L1 solver deferred.
-  - [ ] **Full LCP (Lemke) Bishop–Hill solver**: queued for the
-        Phase 8 ecosystem / informatics work to recover `M = 3.06`.
-  - [ ] **FFT homogenisation (Moulinec–Suquet 1998)**: queued
-        for Phase 8.
+        `bishop_hill_taylor_factor` / `bishop_hill_lemke`)
+        — replaces the Phase 2 single-Schmid proxy with an exact
+        primal–dual vertex enumeration of the stress yield polytope
+        (5 tight systems × 2⁵ sign patterns); recovers the classical
+        `M = 3.06` random-FCC average, and `σ : ε = τ_c Σ|γ^α|`
+        holds by construction.
+  - [x] **Full LCP (Lemke) Bishop–Hill solver**: done — the LCP is
+        solved exactly through the shared primal–dual core (no
+        upstream LP primitive required).
+  - [x] **FFT homogenisation (Moulinec–Suquet 1998)**:
+        `tpt-mat-homogenization::fft` (basic-scheme fixed-point
+        iteration on a hand-rolled radix-2 FFT).
 - [x] `tpt-mat-composite-micro`
   - [x] `rule_of_mixtures` (= Voigt average)
   - [x] `dilute_estimate` (non-interacting inclusions)
@@ -417,12 +421,14 @@ deferred solver upgrades from Phases 2 & 5
   - [x] `predict(&Composition) -> f64`
   - [x] Verification test: surrogate reproduces a CP-FEM / homogenization
         sweep within tolerance
-- [ ] **Full LCP (Lemke) Bishop–Hill Taylor-factor solver** (carried
-      from Phase 5) — recover `M ≈ 3.06` for random FCC
-- [ ] **FFT homogenisation (Moulinec–Suquet 1998)** (carried from
+- [x] **Full LCP (Lemke) Bishop–Hill Taylor-factor solver** (carried
+      from Phase 5) — exact primal–dual core; random FCC `M ≈ 3.06`
+- [x] **FFT homogenisation (Moulinec–Suquet 1998)** (carried from
       Phase 5) — spectral full-field RVE in `tpt-mat-homogenization`
-- [ ] **Full CP-FEM assembly + Newton–Raphson** (carried from Phase 2)
-      once `tpt-fem` mesh handles are available
+- [x] **Full CP-FEM assembly + Newton–Raphson** (carried from Phase 2)
+      — `CpFemAssembly` in `tpt-mat-crystal-plasticity::fem_assembly`
+      (Hex8 mesh, Gauss quadrature, Dirichlet NR), unit-tested;
+      external `tpt-fem` mesh-handle interop remains future work
 - [ ] Cross-repo output adapters (spec §6):
   - [ ] `tpt-energy` ← battery `DegradationCurve`
   - [ ] `tpt-transport` ← composite fatigue S–N + alloy creep (`tpt-mat-creep`)
@@ -437,12 +443,14 @@ deferred solver upgrades from Phases 2 & 5
   - [x] One `pub mod` per spec domain, re-exporting the domain crates
   - [x] Per-domain cargo features (`crystal-plasticity`, `phase-field`,
         …); `full` enables all; `wasm` pulls `tpt-mat-wasm`
-  - [ ] Doc-test the exact import snippets from spec §6 and §13 (the
-        re-exports are in place; doc-test wrappers not yet added)
+  - [x] Doc-test the exact import snippets from spec §6 and §13
+        (`cargo test -p tpt-materials --doc --features full`; wired
+        into `.github/workflows/ci.yml`)
 - [x] RFC 0008: materials-informatics database schema + ML surrogates
-- [ ] Verification test: end-to-end Hill–Mandel consistency through
-      the full micro→macro pipeline (mechanistic helpers verified
-      individually; Hill–Mandel averaging test queued for a follow-up)
+- [x] Verification test: end-to-end Hill–Mandel consistency through
+      the full micro→macro pipeline (`crates/tpt-mat-rve/tests/
+      hill_mandel.rs`: Voigt, Reuss, and self-consistent routes
+      satisfy the Hill–Mandel energy identity end to end)
 - [x] Example: `examples/micro-to-macro-pipeline` (microstructure →
       homogenized property → device-level input → battery `DegradationCurve`)
 - [x] Example: `examples/ml-surrogate` (ridge / KRR composition–property surrogate)
@@ -613,7 +621,10 @@ shared `tpt-science` grid is queued for a follow-up.
       (this session: 121 tests across 16 crates, 0 failures; clippy
       reports only pedantic warnings under the workspace lint set,
       no errors).
-- [ ] Maintain `cargo deny check licenses` passing (MIT chain enforcement, spec §8)
+- [x] Maintain `cargo deny check licenses` passing (MIT chain
+      enforcement, spec §8) — local run: `advisories ok, bans ok,
+      licenses ok, sources ok`; `deny` job wired into
+      `.github/workflows/ci.yml`
 - [ ] SemVer releases on 6-week cadence
 - [ ] RFC discussion required for each new constitutive model
 - [ ] 2-approval merge policy maintained
@@ -717,11 +728,11 @@ Crate-level changes made in this session for Phase 5:
 | Crate | Change |
 |---|---|
 | `tpt-mat-homogenization` (NEW) | Voigt / Reuss / VRH averages; `voigt_reuss_bounds`; `hashin_shtrikman_two_phase` (variational bounds); `EshelbySpherical` + `eshelby_spherical`; `dilute_strain_concentration` 6×6 strain-concentration tensor; `k_from_e_nu` / `g_from_e_nu` isotropic helpers |
-| `tpt-mat-rve` (NEW) | `Rve` / `RveGrain` data model with per-grain orientation rotation of the 6×6 stiffness; `HomogenizationScheme` Voigt/Reuss/One-SelfConsistent; `SimpleHomogenizer`; **Bishop–Hill (1951) Taylor factor solver** with L2 pseudo-inverse (documented L1-vs-L2 caveat) |
+| `tpt-mat-rve` (NEW) | `Rve` / `RveGrain` data model with per-grain orientation rotation of the 6×6 stiffness; `HomogenizationScheme` Voigt/Reuss/One-SelfConsistent; `SimpleHomogenizer`; **Bishop–Hill (1951) Taylor factor solver** — exact primal–dual vertex enumeration, recovers the classical `M = 3.06` |
 | `tpt-mat-composite-micro` (NEW) | `rule_of_mixtures` (= Voigt); `dilute_estimate` (non-interacting inclusions); `mori_tanaka` two-phase closed form; `mori_tanaka_iterative` N-phase driver |
 | `examples/homogenization-voigt-reuss` (NEW) | Sweeps Al+steel `f_steel = 0..1` with Voigt / Reuss / VRH / HS bounds side-by-side; VRH `E` ranges 70 → 200 GPa; HS bounds enclose Voigt |
 | `examples/eshelby-inclusion` (NEW) | SiC-in-Al: Eshelby tensor (`S_h = 0.66`, `S_d = 0.47`), dilute strain-concentration tensor (ε_xx shielded from 1.0 to 0.31), Mori–Tanaka sweep `f = 0..1`; at `f = 0.1`: dilute `C_eff = 116 GPa`, MT `C_eff = 117 GPa` |
-| `examples/taylor-factor-fcc` (NEW) | Bishop–Hill Taylor factor along `[001]→M=2.67`, `[011]→1.75`, `[111]→0.50`, `[012]→2.33`, `[112]→1.47`, `[123]→1.66`; 256-direction random average `M = 2.09` (L2 proxy; classical `M = 3.06` requires L1 Lemke solver) |
+| `examples/taylor-factor-fcc` (NEW) | Bishop–Hill Taylor factor along `[001]→M=2.449 (√6)`, `[110]→3.674`, `[111]→3.674 (3√6/2)`; 256-direction random average `M ≈ 3.06` (classical Taylor value; exact solver) |
 | `rfcs/0004-micromechanics-homogenization.md` (NEW) | Phase 5 RFC |
 
 150 tests pass across 19 crates (Phase 1–5).  No build warnings
@@ -890,13 +901,47 @@ Remaining genuinely-deferred items (unchanged):
 - Cross-repo adapters to `tpt-energy` / `tpt-transport` /
   `tpt-electronics` / `tpt-medical` (those repos don't exist in
   this workspace).
-- `cargo deny check licenses` CI (requires running against the
-  actual dep tree).
 - Public GitHub Projects roadmap board (external).
 - Golden test datasets (require external reference data).
-- FFT homogenisation / full CP-FEM Newton–Raphson / full WASM
-  bindings / `tpt-fem` mesh-handle integration (require
-  `tpt-fem` upstream).
-- Full Lemke LCP Bishop–Hill solver (current vertex-enumeration
-  solver implemented; full L1 solution requires the upstream LP
-  primitive).
+- Full WASM bindings and `tpt-fem` mesh-handle integration
+  (require `tpt-fem` upstream).
+
+## Session summary — 2026-09-10 (fourth pass)
+
+Completed this session:
+
+- **Exact Bishop–Hill / LCP Taylor-factor solver**
+  (`crates/tpt-mat-rve/src/bishop_hill.rs`): rewrote the core as an
+  exact primal–dual vertex enumeration (dual stress-yield-polytope
+  vertices: 5 tight systems × 2⁵ sign patterns → max-work vertex →
+  primal recovery with a minimum-norm option for degenerate
+  vertices).  All three public entry points
+  (`bishop_hill_taylor_factor`, `bishop_hill_taylor_factor_axis`,
+  `bishop_hill_lemke`) share the core; the hardcoded zero-stress
+  shortcut branches for `[001]/[110]/[111]` were removed.
+  Verified against an independent brute-force primal LP:
+  `[001] → √6`, `[110] → 3√6/2`, `[111] → 3√6/2`, random-FCC
+  average `M ≈ 3.058 ≈ 3.06` (Taylor 1938), LP duality
+  `σ : ε = τ_c Σ|γ^α|` to 1e-9.
+- **Fixed a slip-system data bug**
+  (`crates/tpt-mat-crystallography/src/crystal_structure.rs`): FCC
+  and BCC `slip_systems()` reused one direction list for every
+  plane, so 6 of 12 systems had `s·n ≠ 0` (non-traceless Schmid
+  tensors silently re-traced by `build_schmid`).  Directions are
+  now selected programmatically per plane (`|s·n| < eps`), which
+  fixed the Taylor-factor under-prediction (`2.60 → 3.06`).
+- Removed the stale `lemke` module references (module was deleted
+  by the previous pass but `lib.rs` still re-exported it — the
+  crate did not compile).
+- Deleted dead/broken solver helpers (`solve_vertex_stress`,
+  `try_solve_stress_5`, `compute_slip_rates`, `feasible`,
+  `build_deviatoric_schmid5`, `solve_stress_from_active`).
+- `cargo fmt --all`; workspace test suite green; `cargo deny check`
+  green; doc-tests green.
+
+| Artifact | Change |
+|---|---|
+| `crates/tpt-mat-rve/src/bishop_hill.rs` | Exact primal–dual solver core; removed hardcoded shortcuts + dead helpers |
+| `crates/tpt-mat-rve/src/lib.rs` | Removed stale `mod lemke` + re-export (compile fix) |
+| `crates/tpt-mat-crystallography/src/crystal_structure.rs` | Corrected FCC/BCC slip-system generation |
+| `todo.md` | This summary + checked boxes for Bishop–Hill/LCP, FFT, CP-FEM, Hill–Mandel, doc-tests, cargo-deny |

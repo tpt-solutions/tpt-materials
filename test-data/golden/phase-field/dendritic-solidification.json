@@ -1,0 +1,9 @@
+{
+  "grid_n": 64,
+  "n_steps": 100,
+  "solid_fraction_initial": 0.010986328125,
+  "solid_fraction_final": 0.011962890625,
+  "tip_velocity": 7.999999999999995,
+  "primary_arm_spacing": 7.0,
+  "secondary_arm_spacing": 3.5
+}

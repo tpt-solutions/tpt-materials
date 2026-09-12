@@ -50,27 +50,17 @@ impl JmakRecrystallization {
         temperature_k: f64,
         gas_constant: f64,
     ) -> f64 {
-        let k_t = self.k_0
-            * (-self.activation_energy / (gas_constant * temperature_k)).exp();
+        let k_t = self.k_0 * (-self.activation_energy / (gas_constant * temperature_k)).exp();
         1.0 - (-(k_t * time_s).powf(self.avrami_n)).exp()
     }
 
     /// Time to a given recrystallized fraction at temperature `T`.
-    pub fn time_to_fraction(
-        &self,
-        x_target: f64,
-        temperature_k: f64,
-        gas_constant: f64,
-    ) -> f64 {
-        let k_t = self.k_0
-            * (-self.activation_energy / (gas_constant * temperature_k)).exp();
+    pub fn time_to_fraction(&self, x_target: f64, temperature_k: f64, gas_constant: f64) -> f64 {
+        let k_t = self.k_0 * (-self.activation_energy / (gas_constant * temperature_k)).exp();
         if k_t <= 0.0 || x_target <= 0.0 || x_target >= 1.0 {
             return f64::INFINITY;
         }
-        ((-x_target.ln() / 1.0).log(std::f64::consts::E)
-            / self.avrami_n)
-        .exp()
-            / k_t
+        ((-x_target.ln() / 1.0).log(std::f64::consts::E) / self.avrami_n).exp() / k_t
     }
 
     /// t_{50} (time to 50 % RX).
@@ -156,8 +146,7 @@ impl Default for DrxKinetics {
 impl DrxKinetics {
     /// `Ṅ(T)` (m⁻³·s⁻¹).
     pub fn nucleation_rate(&self, temperature_k: f64, gas_constant: f64) -> f64 {
-        self.nucleation_rate_0
-            * (-self.nucleation_q / (gas_constant * temperature_k)).exp()
+        self.nucleation_rate_0 * (-self.nucleation_q / (gas_constant * temperature_k)).exp()
     }
 
     /// `G(T)` (m/s).

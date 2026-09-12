@@ -146,10 +146,7 @@ impl NumberPerArea {
 /// Saltykov stereological method: given a histogram of section
 /// circle radii with widths `Δr`, return the 3-D size-class
 /// populations.
-pub fn saltykov_size_distribution(
-    radii_2d: &[f64],
-    bin_width: f64,
-) -> Vec<f64> {
+pub fn saltykov_size_distribution(radii_2d: &[f64], bin_width: f64) -> Vec<f64> {
     // Saltykov (1967): for each size class k,
     //   N_V(k) = (1 / ΔV_k) · Σ_{j=k}^{n_max} (-1)^{j-k} c(j,k) · N_A(j)
     // with `c(j,k)` the standard Saltykov coefficients and `ΔV_k`

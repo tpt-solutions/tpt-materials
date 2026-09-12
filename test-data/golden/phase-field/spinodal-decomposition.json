@@ -1,0 +1,10 @@
+{
+  "grid_n": 64,
+  "n_steps": 300,
+  "mean_initial": 0.5001999577221695,
+  "energy_initial": 1244.5351320547902,
+  "energy_final": 1226.770568882245,
+  "interface_area_initial": 0.0,
+  "interface_area_final": 1404.0,
+  "mean_final": 0.500197628365323
+}

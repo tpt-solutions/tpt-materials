@@ -154,7 +154,8 @@ pub fn moulinec_suquet_2d(
     let k0: f64 = c_field.iter().sum::<f64>() / n as f64;
     let g0: f64 = g_field.iter().sum::<f64>() / n as f64;
     // Initialise the strain field to the macroscopic target.
-    let mut eps_field: Vec<[f64; 3]> = vec![[target_strain[0], target_strain[1], target_strain[2]]; n];
+    let mut eps_field: Vec<[f64; 3]> =
+        vec![[target_strain[0], target_strain[1], target_strain[2]]; n];
     // Green-Lippmann operator in Fourier space for isotropic
     // reference.  Define per-frequency projectors P_vol(k) and
     // P_dev(k) and combine with the bulk/deviatoric projectors.
@@ -241,8 +242,10 @@ pub fn moulinec_suquet_2d(
                 kk * tr_e_loc + 2.0 * gg * (e[1] - tr_e_loc / 3.0),
                 2.0 * gg * e[2],
             ];
-            let update_xx = (s_loc[0] - (k0 * tr_eps0 + 2.0 * g0 * (e[0] - tr_e_loc / 3.0))) / (k0 + 4.0 * g0 / 3.0);
-            let update_yy = (s_loc[1] - (k0 * tr_eps0 + 2.0 * g0 * (e[1] - tr_e_loc / 3.0))) / (k0 + 4.0 * g0 / 3.0);
+            let update_xx = (s_loc[0] - (k0 * tr_eps0 + 2.0 * g0 * (e[0] - tr_e_loc / 3.0)))
+                / (k0 + 4.0 * g0 / 3.0);
+            let update_yy = (s_loc[1] - (k0 * tr_eps0 + 2.0 * g0 * (e[1] - tr_e_loc / 3.0)))
+                / (k0 + 4.0 * g0 / 3.0);
             let update_xy = (s_loc[2] - 2.0 * g0 * e[2]) / (2.0 * g0);
             eps_field[x] = [
                 e[0] - alpha * update_xx,
@@ -261,29 +264,35 @@ mod tests {
     #[test]
     fn fft2d_identity_inverse_recovers_data() {
         let original: Vec<f64> = vec![
-            1.0, 0.0, 2.0, 0.0, 3.0, 0.0, 4.0, 0.0,
-            5.0, 0.0, 6.0, 0.0, 7.0, 0.0, 8.0, 0.0,
+            1.0, 0.0, 2.0, 0.0, 3.0, 0.0, 4.0, 0.0, 5.0, 0.0, 6.0, 0.0, 7.0, 0.0, 8.0, 0.0,
         ];
         let mut data = original.clone();
         fft2d(&mut data, 4, 2, false);
         fft2d(&mut data, 4, 2, true);
         for (a, b) in data.iter().zip(original.iter()) {
-            assert!((a - b).abs() < 1.0e-9, "FFT2D round-trip failed: {a} vs {b}");
+            assert!(
+                (a - b).abs() < 1.0e-9,
+                "FFT2D round-trip failed: {a} vs {b}"
+            );
         }
     }
 
     #[test]
     fn fft2d_dc_component_matches_sum() {
         let mut data = vec![
-            1.0, 0.0, 2.0, 0.0, 3.0, 0.0, 4.0, 0.0,
-            5.0, 0.0, 6.0, 0.0, 7.0, 0.0, 8.0, 0.0,
+            1.0, 0.0, 2.0, 0.0, 3.0, 0.0, 4.0, 0.0, 5.0, 0.0, 6.0, 0.0, 7.0, 0.0, 8.0, 0.0,
         ];
         let original = data.clone();
         fft2d(&mut data, 4, 2, false);
         // The DC component (k = 0) of the forward FFT equals
         // the sum of all inputs.
         let sum: f64 = (1..=8).map(|x| x as f64).sum();
-        assert!((data[0] - sum).abs() < 1.0e-9, "DC = {} expected {}", data[0], sum);
+        assert!(
+            (data[0] - sum).abs() < 1.0e-9,
+            "DC = {} expected {}",
+            data[0],
+            sum
+        );
         // Round-trip should recover the original input.
         fft2d(&mut data, 4, 2, true);
         for (a, b) in data.iter().zip(original.iter()) {
@@ -301,15 +310,8 @@ mod tests {
         let g_target = 40.0e9;
         let c_field = vec![k_target; n];
         let g_field = vec![g_target; n];
-        let (k_eff, g_eff) = moulinec_suquet_2d(
-            &c_field,
-            &g_field,
-            8,
-            8,
-            [1.0e-3, -1.0e-3, 0.0],
-            10,
-            1.0e-3,
-        );
+        let (k_eff, g_eff) =
+            moulinec_suquet_2d(&c_field, &g_field, 8, 8, [1.0e-3, -1.0e-3, 0.0], 10, 1.0e-3);
         // K recovery: K = tr_avg/(2 tr_e) - G/3 = 0 (tr_e=0, so
         // K is indeterminate from this path).  G_eff should be
         // recovered exactly from the deviatoric stress.

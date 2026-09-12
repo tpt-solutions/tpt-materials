@@ -26,9 +26,9 @@ use thiserror::Error;
 
 use tpt_math_linalg_fixed::Vec3;
 
+use crate::fem::{solve_increment_single_point, BoundaryConditions, CpFemResult, LoadStep};
 use crate::flow::resolved_shear_stresses;
 use crate::model::CrystalPlasticityModel;
-use crate::fem::{solve_increment_single_point, BoundaryConditions, LoadStep, CpFemResult};
 use tpt_mat_hardening::HardeningState;
 
 /// 8-node hexahedral element with trilinear shape functions.
@@ -70,6 +70,54 @@ impl Mesh {
     pub fn n_dof(&self) -> usize {
         self.vertices.len() * 3
     }
+
+    /// Convert a `tpt-fem-mesh` mesh handle into a CP hexahedral mesh.
+    ///
+    /// Only `tpt_fem_mesh::CellType::Hex` (8-node trilinear hexahedra)
+    /// are supported; any other cell type yields
+    /// [`CpFemAssemblyError::UnsupportedCell`].  Both crates use the
+    /// standard trilinear-hex node ordering (bottom face
+    /// counter-clockwise, then top face), so node lists map through
+    /// unchanged.  Call `tpt_fem_mesh::Mesh::validate()` first if the
+    /// mesh may contain dangling references.
+    #[cfg(feature = "fem")]
+    pub fn from_tpt_fem(mesh: &tpt_fem_mesh::Mesh) -> Result<Self, CpFemAssemblyError> {
+        let vertices = (0..mesh.node_count())
+            .map(|id| {
+                let c = mesh.node_coords(id);
+                Vec3::new(c[0], c[1], c[2])
+            })
+            .collect();
+        let mut elements = Vec::new();
+        for element in &mesh.elements {
+            match element.cell_type {
+                tpt_fem_mesh::CellType::Hex => {
+                    if element.nodes.len() != 8 {
+                        return Err(CpFemAssemblyError::UnsupportedCell(format!(
+                            "Hex cell {} has {} nodes (expected 8)",
+                            element.id,
+                            element.nodes.len()
+                        )));
+                    }
+                    let nodes: [usize; 8] = element.nodes[..8].try_into().expect("checked length");
+                    elements.push(Hex8 { nodes });
+                }
+                other => {
+                    return Err(CpFemAssemblyError::UnsupportedCell(format!(
+                        "cell {} of type {} cannot be used for CP-FEM",
+                        element.id,
+                        other.name()
+                    )));
+                }
+            }
+        }
+        if elements.is_empty() {
+            return Err(CpFemAssemblyError::UnsupportedCell(
+                "mesh contains no hexahedral cells".to_string(),
+            ));
+        }
+        Ok(Self { vertices, elements })
+    }
 }
 
 /// FEM errors.
@@ -81,6 +129,10 @@ pub enum CpFemAssemblyError {
     /// Mesh / boundary-condition incompatibility.
     #[error("boundary condition error: {0}")]
     BadBoundary(String),
+    /// A `tpt-fem-mesh` cell could not be mapped to the trilinear hex
+    /// formulation.
+    #[error("unsupported cell in tpt-fem mesh: {0}")]
+    UnsupportedCell(String),
 }
 
 /// FEM solver state.
@@ -99,8 +151,7 @@ impl CpFemAssembly {
     /// Construct a single-material assembly over the given mesh.
     pub fn new(mesh: Mesh, material: CrystalPlasticityModel) -> Self {
         let n_gauss = mesh.elements.len() * 8;
-        let hardening_state =
-            vec![HardeningState::from_crss(&material.slip_systems); n_gauss];
+        let hardening_state = vec![HardeningState::from_crss(&material.slip_systems); n_gauss];
         let u = vec![0.0; mesh.n_dof()];
         Self {
             mesh,
@@ -112,7 +163,13 @@ impl CpFemAssembly {
     }
 
     /// Newton-Raphson solve for one load step.
-    pub fn solve(&mut self, load: &LoadStep, bc: &BoundaryConditions, max_iter: usize, tol: f64) -> Result<CpFemResult, CpFemAssemblyError> {
+    pub fn solve(
+        &mut self,
+        load: &LoadStep,
+        bc: &BoundaryConditions,
+        max_iter: usize,
+        tol: f64,
+    ) -> Result<CpFemResult, CpFemAssemblyError> {
         let n_dof = self.mesh.n_dof();
         let mut u = vec![0.0; n_dof];
         let mut ext = vec![0.0; n_dof];
@@ -331,7 +388,11 @@ fn apply_b_u(b: &[Vec<f64>; 6], u: &[f64]) -> [f64; 6] {
 
 /// 8-point Gauss rule for the reference cube [-1, 1]^3.
 const GAUSS8: &[(f64, f64, f64)] = &[
-    (-0.5773502691896257, -0.5773502691896257, -0.5773502691896257),
+    (
+        -0.5773502691896257,
+        -0.5773502691896257,
+        -0.5773502691896257,
+    ),
     (0.5773502691896257, -0.5773502691896257, -0.5773502691896257),
     (0.5773502691896257, 0.5773502691896257, -0.5773502691896257),
     (-0.5773502691896257, 0.5773502691896257, -0.5773502691896257),
@@ -433,7 +494,16 @@ fn hex8_b_matrix(hex: &Hex8, vertices: &[Vec3], xi: f64, eta: f64, zeta: f64) ->
 
 /// Compute the determinant of the Hex8 Jacobian at (xi, eta, zeta).
 fn hex8_det_j(hex: &Hex8, vertices: &[Vec3], xi: f64, eta: f64, zeta: f64) -> f64 {
-    let dnx = [0.125 * -1.0, 0.125, 0.125, -0.125, -0.125, 0.125, 0.125, -0.125];
+    let dnx = [
+        0.125 * -1.0,
+        0.125,
+        0.125,
+        -0.125,
+        -0.125,
+        0.125,
+        0.125,
+        -0.125,
+    ];
     let _ = dnx; // suppress unused
     let mut j = [[0.0_f64; 3]; 3];
     let dnx_full = |x: f64, e: f64, z: f64| -> [f64; 8] {
@@ -474,7 +544,13 @@ fn hex8_det_j(hex: &Hex8, vertices: &[Vec3], xi: f64, eta: f64, zeta: f64) -> f6
         + j[0][2] * (j[1][0] * j[2][1] - j[1][1] * j[2][0])
 }
 
-fn apply_dirichlet(r: &mut [f64], k: &mut Vec<Vec<f64>>, u: &[f64], bc: &BoundaryConditions, mesh: &Mesh) {
+fn apply_dirichlet(
+    r: &mut [f64],
+    k: &mut Vec<Vec<f64>>,
+    u: &[f64],
+    bc: &BoundaryConditions,
+    mesh: &Mesh,
+) {
     // Fully fixed nodes: zero out u and the corresponding rows/cols.
     for &n in &bc.fixed_nodes {
         for k_axis in 0..3 {

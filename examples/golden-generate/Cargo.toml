@@ -1,0 +1,33 @@
+[package]
+name = "golden-generate"
+description = "Regenerates the test-data/golden/* reference datasets consumed by the golden regression tests"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+authors.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+tpt-mat-battery = { path = "../../crates/tpt-mat-battery", version = "0.1" }
+tpt-mat-crystal-plasticity = { path = "../../crates/tpt-mat-crystal-plasticity", version = "0.1" }
+tpt-mat-crystallography = { path = "../../crates/tpt-mat-crystallography", version = "0.1" }
+tpt-mat-damage = { path = "../../crates/tpt-mat-damage", version = "0.1" }
+tpt-mat-fatigue-micro = { path = "../../crates/tpt-mat-fatigue-micro", version = "0.1" }
+tpt-mat-hardening = { path = "../../crates/tpt-mat-hardening", version = "0.1" }
+tpt-mat-phase-field = { path = "../../crates/tpt-mat-phase-field", version = "0.1" }
+tpt-mat-rve = { path = "../../crates/tpt-mat-rve", version = "0.1" }
+tpt-mat-solidification = { path = "../../crates/tpt-mat-solidification", version = "0.1" }
+tpt-science = { path = "../../crates/tpt-science", version = "0.1" }
+tpt-math-linalg-fixed = { path = "../../crates/tpt-math-linalg-fixed", version = "0.1" }
+serde = { workspace = true }
+serde_json = { workspace = true }

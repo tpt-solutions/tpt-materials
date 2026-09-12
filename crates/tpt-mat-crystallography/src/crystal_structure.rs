@@ -62,23 +62,35 @@ impl CrystalStructure {
 }
 
 /// FCC: 12 slip systems, family `{111}⟨110⟩`.
+///
+/// The three ⟨110⟩ directions of each {111} plane are selected
+/// programmatically as the ⟨110⟩ vectors orthogonal to the plane
+/// normal (`|s·n| < eps`), which guarantees every system satisfies the
+/// geometric requirement `s ⊥ n`.
 fn fcc_slip_systems() -> Vec<SlipSystem> {
-    // 4 planes × 3 directions per plane = 12.
-    let planes: [MillerIndex; 4] = [
-        MillerIndex::new(1, 1, 1),
-        MillerIndex::new(-1, 1, 1),
-        MillerIndex::new(1, -1, 1),
-        MillerIndex::new(1, 1, -1),
+    const FCC_PLANES: [[i32; 3]; 4] = [[1, 1, 1], [-1, 1, 1], [1, -1, 1], [1, 1, -1]];
+    // One representative per ±⟨110⟩ family.
+    const FCC_DIRS: [[i32; 3]; 6] = [
+        [1, 1, 0],
+        [-1, 1, 0],
+        [1, 0, 1],
+        [-1, 0, 1],
+        [0, 1, 1],
+        [0, -1, 1],
     ];
-    let dirs_per_plane: [[i32; 3]; 3] = [[-1, 1, 0], [0, -1, 1], [1, 0, -1]];
-    // Combine, then dedupe by (plane, direction) up to sign symmetry.
     let mut systems = Vec::with_capacity(12);
-    for plane in &planes {
-        for d in &dirs_per_plane {
-            let n = plane_normal(*plane);
-            let s = slip_direction([d[0], d[1], d[2]]);
+    for p in &FCC_PLANES {
+        let plane = MillerIndex::new(p[0], p[1], p[2]);
+        let n = plane_normal(plane);
+        let mut in_plane = 0;
+        for d in &FCC_DIRS {
+            let s = slip_direction(*d);
+            if s.dot(n).abs() > 1.0e-9 {
+                continue;
+            }
+            in_plane += 1;
             systems.push(SlipSystem {
-                plane: *plane,
+                plane,
                 slip_direction_miller: *d,
                 plane_normal: n,
                 slip_direction: s,
@@ -86,29 +98,40 @@ fn fcc_slip_systems() -> Vec<SlipSystem> {
                 family: crate::SlipFamily::Fcc110,
             });
         }
+        debug_assert_eq!(in_plane, 3, "each {{111}} plane holds 3 ⟨110⟩ directions");
     }
     systems
 }
 
 /// BCC: 12 slip systems, family `{110}⟨111⟩`.
+///
+/// The two ⟨111⟩ directions of each {110} plane are selected
+/// programmatically as the ⟨111⟩ vectors orthogonal to the plane
+/// normal (`|s·n| < eps`).
 fn bcc_slip_systems() -> Vec<SlipSystem> {
-    let planes: [MillerIndex; 6] = [
-        MillerIndex::new(1, 1, 0),
-        MillerIndex::new(-1, 1, 0),
-        MillerIndex::new(1, 0, 1),
-        MillerIndex::new(1, 0, -1),
-        MillerIndex::new(0, 1, 1),
-        MillerIndex::new(0, -1, 1),
+    const BCC_PLANES: [[i32; 3]; 6] = [
+        [1, 1, 0],
+        [-1, 1, 0],
+        [1, 0, 1],
+        [1, 0, -1],
+        [0, 1, 1],
+        [0, -1, 1],
     ];
-    // 2 unique ⟨111⟩ directions per plane (up to sign).
-    let dirs_per_plane: [[i32; 3]; 2] = [[1, 1, 1], [-1, -1, 1]];
+    // One representative per ±⟨111⟩ family.
+    const BCC_DIRS: [[i32; 3]; 4] = [[1, 1, 1], [-1, 1, 1], [1, -1, 1], [1, 1, -1]];
     let mut systems = Vec::with_capacity(12);
-    for plane in &planes {
-        for d in &dirs_per_plane {
-            let n = plane_normal(*plane);
-            let s = slip_direction([d[0], d[1], d[2]]);
+    for p in &BCC_PLANES {
+        let plane = MillerIndex::new(p[0], p[1], p[2]);
+        let n = plane_normal(plane);
+        let mut in_plane = 0;
+        for d in &BCC_DIRS {
+            let s = slip_direction(*d);
+            if s.dot(n).abs() > 1.0e-9 {
+                continue;
+            }
+            in_plane += 1;
             systems.push(SlipSystem {
-                plane: *plane,
+                plane,
                 slip_direction_miller: *d,
                 plane_normal: n,
                 slip_direction: s,
@@ -116,6 +139,7 @@ fn bcc_slip_systems() -> Vec<SlipSystem> {
                 family: crate::SlipFamily::Bcc111,
             });
         }
+        debug_assert_eq!(in_plane, 2, "each {{110}} plane holds 2 ⟨111⟩ directions");
     }
     systems
 }

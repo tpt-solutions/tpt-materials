@@ -118,11 +118,7 @@ pub fn voce_fit(data: &[(f64, f64)]) -> VoceFit {
         let mut sse = 0.0;
         for &(g, tau_obs) in data {
             let ratio = -g / gamma_c;
-            let exp_term = if ratio > -50.0 {
-                ratio.exp()
-            } else {
-                0.0
-            };
+            let exp_term = if ratio > -50.0 { ratio.exp() } else { 0.0 };
             let model = tau_0 + tau_s * (1.0 - exp_term) + theta_0 * g;
             let r = tau_obs - model;
             sse += r * r;

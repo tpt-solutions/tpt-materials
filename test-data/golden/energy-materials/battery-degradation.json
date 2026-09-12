@@ -1,0 +1,35 @@
+{
+  "chemistry": "NMC811",
+  "c_rate": 1.0,
+  "temperature_k": 298.0,
+  "num_cycles": 1000,
+  "final_capacity_retention": 0.5,
+  "final_resistance_growth": 10.0,
+  "milestones": [
+    {
+      "cycle": 1,
+      "capacity_retention": 0.9978675444679663,
+      "resistance_growth": 0.01
+    },
+    {
+      "cycle": 10,
+      "capacity_retention": 0.983,
+      "resistance_growth": 0.1
+    },
+    {
+      "cycle": 100,
+      "capacity_retention": 0.8436754446796633,
+      "resistance_growth": 1.0
+    },
+    {
+      "cycle": 500,
+      "capacity_retention": 0.5,
+      "resistance_growth": 5.0
+    },
+    {
+      "cycle": 1000,
+      "capacity_retention": 0.5,
+      "resistance_growth": 10.0
+    }
+  ]
+}

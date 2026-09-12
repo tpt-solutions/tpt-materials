@@ -47,5 +47,8 @@ pub use eshelby::{
     dilute_strain_concentration, eshelby_spherical, EshelbySpherical, StrainConcentrationTensor,
 };
 pub use fft::{fft2d, moulinec_suquet_2d};
-pub use hashin_shtrikman::{hashin_shtrikman_two_phase, HashinShtrikmanResult};
+pub use hashin_shtrikman::{
+    hashin_shtrikman_k_g, hashin_shtrikman_spherical_bulk, hashin_shtrikman_spherical_shear,
+    hashin_shtrikman_two_phase, HashinShtrikmanResult,
+};
 pub use voigt_reuss::{g_from_e_nu, k_from_e_nu, reuss, voigt, voigt_reuss_average};
